@@ -1,0 +1,9 @@
+
+{
+  "name": "K-Baby Snack Service",
+  "description": "Premium Korean baby snacks for Malaysian mothers at the most reasonable prices. High quality, Halal-certified, and AI-powered review system.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
