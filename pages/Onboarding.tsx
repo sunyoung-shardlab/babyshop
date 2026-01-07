@@ -23,7 +23,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onStart }) => {
         <div className="space-y-4 w-full">
           <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
             <span className="text-2xl">✨</span>
-            <p className="text-sm font-medium text-left">회원가입 즉시 5% 웰컴 쿠폰</p>
+            <p className="text-sm font-medium text-left">회원가입 즉시 5% 웰컴 쿠폰!!</p>
           </div>
           <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
             <span className="text-2xl">📈</span>
