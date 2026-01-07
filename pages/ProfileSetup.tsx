@@ -25,13 +25,13 @@ const ProfileSetup: React.FC = () => {
             <div key={s} className={`h-1 flex-1 rounded-full ${s <= step ? 'bg-[#800020]' : 'bg-gray-200'}`}></div>
           ))}
         </div>
-        <h1 className="text-2xl font-bold hand-drawn-font">Tell us about your baby</h1>
+        <h1 className="text-2xl font-bold hand-drawn-font">아기에 대해 알려주세요</h1>
       </div>
 
       {step === 1 && (
         <div className="space-y-6">
           <div className="space-y-4">
-            <label className="font-bold text-gray-700">How old is your little one? (Months)</label>
+            <label className="font-bold text-gray-700">아이는 몇 개월인가요? (개월)</label>
             <div className="grid grid-cols-4 gap-3">
               {[6, 12, 18, 24, 30].map(m => (
                 <button 
@@ -45,32 +45,32 @@ const ProfileSetup: React.FC = () => {
             </div>
           </div>
           <div className="space-y-4">
-            <label className="font-bold text-gray-700">Gender</label>
+            <label className="font-bold text-gray-700">성별</label>
             <div className="flex gap-4">
               <button 
                 onClick={() => setProfile({...profile, gender: 'boy'})}
                 className={`flex-1 py-4 rounded-xl border-2 font-bold ${profile.gender === 'boy' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-100'}`}
               >
-                Boy
+                남아
               </button>
               <button 
                 onClick={() => setProfile({...profile, gender: 'girl'})}
                 className={`flex-1 py-4 rounded-xl border-2 font-bold ${profile.gender === 'girl' ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-gray-100'}`}
               >
-                Girl
+                여아
               </button>
             </div>
           </div>
-          <button onClick={() => setStep(2)} className="w-full bg-[#800020] text-white py-4 rounded-2xl font-bold">Next</button>
+          <button onClick={() => setStep(2)} className="w-full bg-[#800020] text-white py-4 rounded-2xl font-bold">다음</button>
         </div>
       )}
 
       {step === 2 && (
         <div className="space-y-6">
           <div className="space-y-4">
-            <label className="font-bold text-gray-700">Dietary Preferences</label>
+            <label className="font-bold text-gray-700">식이 선호도</label>
             <div className="p-4 border-2 rounded-2xl flex items-center justify-between">
-              <span className="font-medium text-gray-600">Strict Halal Certified Only</span>
+              <span className="font-medium text-gray-600">엄격한 할랄 인증만</span>
               <input 
                 type="checkbox" 
                 checked={profile.needsHalal}
@@ -80,13 +80,13 @@ const ProfileSetup: React.FC = () => {
             </div>
           </div>
           <div className="space-y-4">
-            <label className="font-bold text-gray-700">Baby's Personality</label>
+            <label className="font-bold text-gray-700">아이의 성격</label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                {id: 'active', label: 'Active Blue', color: 'blue'},
-                {id: 'calm', label: 'Calm Pink', color: 'pink'},
-                {id: 'smiley', label: 'Smiley Yellow', color: 'yellow'},
-                {id: 'shy', label: 'Shy Orange', color: 'orange'}
+                {id: 'active', label: '활발한 블루', color: 'blue'},
+                {id: 'calm', label: '차분한 핑크', color: 'pink'},
+                {id: 'smiley', label: '웃음 많은 옐로우', color: 'yellow'},
+                {id: 'shy', label: '수줍은 오렌지', color: 'orange'}
               ].map(p => (
                 <button 
                   key={p.id}
@@ -99,8 +99,8 @@ const ProfileSetup: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-4">
-            <button onClick={() => setStep(1)} className="flex-1 border py-4 rounded-2xl font-bold">Back</button>
-            <button onClick={handleFinish} className="flex-[2] bg-[#800020] text-white py-4 rounded-2xl font-bold">Finish</button>
+            <button onClick={() => setStep(1)} className="flex-1 border py-4 rounded-2xl font-bold">이전</button>
+            <button onClick={handleFinish} className="flex-[2] bg-[#800020] text-white py-4 rounded-2xl font-bold">완료</button>
           </div>
         </div>
       )}

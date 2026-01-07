@@ -17,7 +17,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   
   const product = MOCK_PRODUCTS.find(p => p.id === id);
 
-  if (!product) return <div className="p-10 text-center">Product not found</div>;
+  if (!product) return <div className="p-10 text-center">상품을 찾을 수 없습니다</div>;
 
   const isGuest = !user?.isLoggedIn;
 
@@ -44,12 +44,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
         {isGuest && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/40 backdrop-blur-md p-10 text-center">
              <div className="kraft-paper p-8 rounded-2xl shadow-xl border border-dashed border-[#800020] space-y-4">
-                <h3 className="text-xl font-bold hand-drawn-font">Special Member Price!</h3>
-                <p className="text-sm text-gray-600">Please sign up to view full details and enjoy exclusive benefits.</p>
+                <h3 className="text-xl font-bold hand-drawn-font">회원 특가!</h3>
+                <p className="text-sm text-gray-600">가입하시면 상세 정보와 특별 혜택을 확인하실 수 있습니다.</p>
                 <Link to="/login" className="block w-full bg-[#800020] text-white py-3 rounded-xl font-bold">
-                  Sign Up in 3 Seconds
+                  3초만에 가입하기
                 </Link>
-                <p className="text-[10px] text-gray-400">10% Welcome Coupon issued immediately</p>
+                <p className="text-[10px] text-gray-400">10% 환영 쿠폰 즉시 발급</p>
              </div>
           </div>
         )}
@@ -73,19 +73,19 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           <div className="space-y-2">
             {product.stock < 10 && (
               <div className="flex items-center gap-2 text-orange-600 text-sm font-bold bg-orange-50 p-2 rounded-lg">
-                <AlertTriangle size={16} /> Only {product.stock} items left in stock!
+                <AlertTriangle size={16} /> 재고 {product.stock}개만 남았습니다!
               </div>
             )}
             {product.type === 'B' && (
               <div className="flex items-center gap-2 text-[#800020] text-sm font-bold bg-pink-50 p-2 rounded-lg">
-                <Clock size={16} /> Deal Ends in: 02d 14h 22m
+                <Clock size={16} /> 특가 종료까지: 02일 14시간 22분
               </div>
             )}
           </div>
 
           {/* Quantity Selector */}
           <div className="flex items-center justify-between py-4 border-y">
-            <span className="font-bold">Quantity</span>
+            <span className="font-bold">수량</span>
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -102,12 +102,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
               </button>
             </div>
           </div>
-          <p className="text-[10px] text-gray-400 text-right">Max {product.maxOrder} per person</p>
+          <p className="text-[10px] text-gray-400 text-right">1인당 최대 {product.maxOrder}개</p>
 
           {/* Description */}
           <div className="space-y-3">
             <h3 className="font-bold text-lg flex items-center gap-2">
-              <Info size={18} /> Product Info
+              <Info size={18} /> 상품 정보
             </h3>
             <p className="text-sm text-gray-600 leading-relaxed">
               {product.description}
@@ -117,12 +117,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           {/* Delivery Info */}
           <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className="text-gray-500">Shipping From</span>
-              <span className="font-bold text-gray-700">Kuala Lumpur Warehouse</span>
+              <span className="text-gray-500">배송지</span>
+              <span className="font-bold text-gray-700">쿠알라룸푸르 창고</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Delivery Est.</span>
-              <span className="font-bold text-gray-700">4-5 Working Days</span>
+              <span className="text-gray-500">배송 예상</span>
+              <span className="font-bold text-gray-700">4-5 영업일</span>
             </div>
           </div>
         </div>
@@ -133,10 +133,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
         <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto p-4 bg-white/80 backdrop-blur border-t z-50">
           <div className="flex gap-4">
             <button className="flex-1 border-2 border-[#800020] text-[#800020] py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
-              <ShoppingCart size={20} /> Cart
+              <ShoppingCart size={20} /> 장바구니
             </button>
             <button className="flex-[2] bg-[#800020] text-white py-4 rounded-2xl font-bold shadow-xl">
-              Buy Now
+              바로 구매
             </button>
           </div>
         </div>

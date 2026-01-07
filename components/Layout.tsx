@@ -30,19 +30,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t flex justify-around py-2 px-4 z-50">
         <Link to="/" className={`flex flex-col items-center p-2 ${isActive('/') ? 'text-[#800020]' : 'text-gray-400'}`}>
           <Home size={20} />
-          <span className="text-[10px] mt-1">Home</span>
+          <span className="text-[10px] mt-1">홈</span>
         </Link>
         <Link to="/products" className={`flex flex-col items-center p-2 ${isActive('/products') ? 'text-[#800020]' : 'text-gray-400'}`}>
           <ShoppingBag size={20} />
-          <span className="text-[10px] mt-1">Shop</span>
+          <span className="text-[10px] mt-1">쇼핑</span>
         </Link>
         <Link to="/likes" className={`flex flex-col items-center p-2 ${isActive('/likes') ? 'text-[#800020]' : 'text-gray-400'}`}>
           <Heart size={20} />
-          <span className="text-[10px] mt-1">Likes</span>
+          <span className="text-[10px] mt-1">찜</span>
         </Link>
         <Link to="/mypage" className={`flex flex-col items-center p-2 ${isActive('/mypage') ? 'text-[#800020]' : 'text-gray-400'}`}>
           <User size={20} />
-          <span className="text-[10px] mt-1">Account</span>
+          <span className="text-[10px] mt-1">마이페이지</span>
         </Link>
       </nav>
     </div>

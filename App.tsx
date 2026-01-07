@@ -37,15 +37,15 @@ const App: React.FC = () => {
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/review/:id" element={<ReviewEditor />} />
           {/* Mock MyPage/Likes routes for navigation */}
-          <Route path="/mypage" element={<div className="p-10 text-center"><h1 className="text-2xl font-bold hand-drawn-font">My Page</h1><p className="mt-4 text-gray-500">Points: {user?.points || 0}P</p><div className="mt-8 space-y-4">{user?.isLoggedIn && <button onClick={() => window.location.hash = '#/review/1'} className="block w-full border p-4 rounded-xl">Write Review for snack</button>}</div></div>} />
-          <Route path="/likes" element={<div className="p-10 text-center text-gray-400">No liked items yet.</div>} />
-          <Route path="/products" element={<div className="p-10 text-center text-gray-400">Full catalog coming soon!</div>} />
+          <Route path="/mypage" element={<div className="p-10 text-center"><h1 className="text-2xl font-bold hand-drawn-font">마이페이지</h1><p className="mt-4 text-gray-500">포인트: {user?.points || 0}P</p><div className="mt-8 space-y-4">{user?.isLoggedIn && <button onClick={() => window.location.hash = '#/review/1'} className="block w-full border p-4 rounded-xl">간식 리뷰 작성하기</button>}</div></div>} />
+          <Route path="/likes" element={<div className="p-10 text-center text-gray-400">찜한 상품이 없습니다.</div>} />
+          <Route path="/products" element={<div className="p-10 text-center text-gray-400">전체 카탈로그 준비 중입니다!</div>} />
           <Route path="/welcome-coupon" element={
             <div className="p-10 flex flex-col items-center text-center space-y-6">
               <div className="w-24 h-24 bg-[#800020] text-white rounded-full flex items-center justify-center text-3xl font-bold animate-bounce">10%</div>
-              <h1 className="text-2xl font-bold">Welcome Coupon!</h1>
-              <p className="text-sm text-gray-500">You've successfully signed up. A 10% discount coupon has been added to your account.</p>
-              <button onClick={() => window.location.hash = '#/'} className="w-full bg-[#800020] text-white py-4 rounded-2xl font-bold shadow-xl">Start Shopping</button>
+              <h1 className="text-2xl font-bold">환영 쿠폰!</h1>
+              <p className="text-sm text-gray-500">가입이 완료되었습니다. 10% 할인 쿠폰이 계정에 추가되었습니다.</p>
+              <button onClick={() => window.location.hash = '#/'} className="w-full bg-[#800020] text-white py-4 rounded-2xl font-bold shadow-xl">쇼핑 시작하기</button>
             </div>
           } />
           <Route path="*" element={<Navigate to="/" />} />

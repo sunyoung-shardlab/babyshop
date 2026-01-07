@@ -11,12 +11,12 @@ export const COLORS = {
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
-    name: 'Pure Eat Organic Tteok-ppung (Original)',
+    name: '퓨어잇 유기농 떡뻥 (오리지널)',
     price: 18.50, // Approx MYR
     originalPrice: 35.00,
     image: 'https://picsum.photos/seed/baby1/400/400',
     category: 'Snacks',
-    description: '100% Organic rice snack from Korea. Melt-in-mouth texture perfect for babies starting solids.',
+    description: '100% 유기농 한국산 쌀 과자. 입에서 살살 녹는 질감으로 이유식 초기 아기에게 완벽합니다.',
     isHalal: true,
     stock: 8,
     maxOrder: 5,
@@ -24,12 +24,12 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: '2',
-    name: 'Premium Bamboo Fiber Baby Romper',
+    name: '프리미엄 대나무 섬유 아기 우주복',
     price: 45.00,
     originalPrice: 89.00,
     image: 'https://picsum.photos/seed/baby2/400/400',
     category: 'Apparel',
-    description: 'Ultra-soft bamboo fiber clothing. Breathable and hypoallergenic for sensitive skin.',
+    description: '초부드러운 대나무 섬유 의류. 통기성이 좋고 민감한 피부에 저자극적입니다.',
     isHalal: false,
     stock: 15,
     maxOrder: 3,
@@ -38,12 +38,12 @@ export const MOCK_PRODUCTS: Product[] = [
   },
   {
     id: '3',
-    name: 'Organic Strawberry Puff',
+    name: '유기농 딸기 퍼프',
     price: 22.00,
     originalPrice: 40.00,
     image: 'https://picsum.photos/seed/baby3/400/400',
     category: 'Snacks',
-    description: 'Tasty strawberry flavored organic puffs. No added sugar or artificial preservatives.',
+    description: '맛있는 딸기 맛 유기농 퍼프. 첨가 설탕이나 인공 방부제가 없습니다.',
     isHalal: true,
     stock: 5,
     maxOrder: 5,
@@ -54,16 +54,16 @@ export const MOCK_PRODUCTS: Product[] = [
 export const MOCK_TIPS: ContentTip[] = [
   {
     id: 'c1',
-    title: 'How to start weaning at 6 months',
+    title: '6개월 이유식 시작하는 방법',
     thumbnail: 'https://picsum.photos/seed/tip1/400/250',
-    description: 'A guide to introducing solids safely.',
+    description: '안전하게 이유식을 시작하는 가이드.',
     targetMonths: 6
   },
   {
     id: 'c2',
-    title: 'Best snacks for finger dexterity',
+    title: '손가락 발달에 좋은 최고의 간식',
     thumbnail: 'https://picsum.photos/seed/tip2/400/250',
-    description: 'Help your baby develop fine motor skills.',
+    description: '아기의 소근육 발달을 돕는 방법.',
     targetMonths: 10
   }
 ];
