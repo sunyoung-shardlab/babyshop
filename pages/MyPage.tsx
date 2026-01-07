@@ -15,7 +15,7 @@ const MyPage: React.FC<MyPageProps> = ({ isLoggedIn, onLogin, onNavigate }) => {
     level: Membership.Sprout,
     points: 100,
     babyAge: 14,
-    babyPersonality: '얌전한 핑크'
+    babyPersonality: '얌전한 핑크 공주'
   });
 
   if (!isLoggedIn) {
