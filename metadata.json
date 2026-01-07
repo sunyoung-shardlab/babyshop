@@ -1,9 +1,7 @@
-
 {
-  "name": "K-Baby Snack Service",
-  "description": "Premium Korean baby snacks for Malaysian mothers at the most reasonable prices. High quality, Halal-certified, and AI-powered review system.",
+  "name": "K-Baby Malaysia: Premium Korean Baby Store",
+  "description": "A specialized store for Malaysian moms offering high-quality Korean baby snacks and products at reasonable prices, featuring AI-assisted reviews and a hand-crafted aesthetic.",
   "requestFramePermissions": [
-    "camera",
-    "microphone"
+    "camera"
   ]
 }

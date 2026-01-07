@@ -1,39 +1,51 @@
 
-export type Page = 'onboarding' | 'home' | 'product-detail' | 'cart' | 'mypage' | 'review' | 'login';
-
 export interface Product {
   id: string;
   name: string;
-  price: number; // in RM (Ringgit)
-  krPrice: number; // in KRW
+  price: number;
+  originalPrice: number;
   image: string;
-  type: 'regular' | 'limited';
-  stock: number;
-  deadline?: string;
+  category: string;
   description: string;
+  isHalal: boolean;
+  stock: number;
+  maxOrder: number;
+  type: 'A' | 'B'; // A: Regular, B: Time-limited
+  deadline?: string;
 }
 
-export interface UserProfile {
-  id: string;
-  babyAge: number; // months
-  babyGender: 'boy' | 'girl';
-  halalRequired: boolean;
-  personality: 'active' | 'calm' | 'smiling' | 'shy';
-  address: string;
-  phone: string;
-}
-
-export interface Coupon {
+export interface User {
   id: string;
   name: string;
-  discount: number; // percentage
-  expiryDate: string;
-  isActive: boolean;
+  email: string;
+  babyAgeMonths: number;
+  babyGender: 'boy' | 'girl';
+  halalRequired: boolean;
+  interests: string[];
+  points: number;
+  membershipTier: 'Sprout' | 'Flower' | 'Tree' | 'Forest';
+  isLoggedIn: boolean;
 }
 
-export enum Membership {
-  Sprout = '새싹',
-  Flower = '꽃',
-  Tree = '나무',
-  Forest = '숲'
+export interface Review {
+  id: string;
+  productId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  imageUrl?: string;
+  date: string;
+}
+
+export interface ContentTip {
+  id: string;
+  title: string;
+  thumbnail: string;
+  description: string;
+  targetMonths: number;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
 }

@@ -1,120 +1,146 @@
 
-import React, { useState } from 'react';
-import { Product, Page } from '../types';
-import { ArrowLeft, ShoppingCart, Share2, Heart, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { MOCK_PRODUCTS, COLORS } from '../constants';
+// Added Clock to the imports from lucide-react
+import { ChevronLeft, Share2, Info, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
+import { User } from '../types';
 
 interface ProductDetailProps {
-  product: Product | null;
-  isLoggedIn: boolean;
-  onLogin: () => void;
-  onAddToCart: (product: Product, quantity: number) => void;
+  user: User | null;
 }
 
-const ProductDetail: React.FC<ProductDetailProps> = ({ product, isLoggedIn, onLogin, onAddToCart }) => {
+const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
-  const [isLiked, setIsLiked] = useState(false);
+  
+  const product = MOCK_PRODUCTS.find(p => p.id === id);
 
-  if (!product) return <div className="p-10 text-center">상품 정보를 불러올 수 없습니다.</div>;
+  if (!product) return <div className="p-10 text-center">Product not found</div>;
+
+  const isGuest = !user?.isLoggedIn;
 
   return (
-    <div className="relative">
-      {/* Sticky Header */}
-      <div className="sticky top-0 bg-white/80 backdrop-blur-md z-40 px-4 py-3 flex justify-between items-center border-b border-gray-50">
-        <button onClick={() => window.history.back()}><ArrowLeft size={24} /></button>
-        <h2 className="text-sm font-bold line-clamp-1 max-w-[200px]">{product.name}</h2>
-        <div className="flex gap-4">
-          <Share2 size={20} className="text-gray-600" />
-          <Heart 
-            size={20} 
-            className={`${isLiked ? 'text-red-500 fill-red-500' : 'text-gray-600'}`} 
-            onClick={() => setIsLiked(!isLiked)} 
-          />
-        </div>
+    <div className="animate-fadeIn">
+      {/* Top Bar */}
+      <div className="p-4 flex justify-between items-center absolute top-0 left-0 right-0 z-10 max-w-md mx-auto">
+        <button onClick={() => navigate(-1)} className="p-2 bg-white/80 backdrop-blur rounded-full">
+          <ChevronLeft size={20} />
+        </button>
+        <button className="p-2 bg-white/80 backdrop-blur rounded-full">
+          <Share2 size={20} />
+        </button>
       </div>
 
-      {/* Main Image */}
-      <img src={product.image} alt={product.name} className="w-full aspect-square object-cover" />
+      {/* Image */}
+      <div className="aspect-square bg-gray-100 overflow-hidden">
+        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+      </div>
 
-      {/* Login Gate for Content */}
-      <div className={`relative ${!isLoggedIn ? 'min-h-[400px]' : ''}`}>
-        {!isLoggedIn && (
-          <div className="absolute inset-0 z-10 backdrop-blur-md flex flex-col items-center justify-center p-8 bg-white/30">
-            <div className="bg-white p-6 rounded-3xl shadow-xl text-center max-w-[280px]">
-              <h3 className="text-lg font-bold text-burgundy mb-2">회원 전용 상세 정보</h3>
-              <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-                3초만에 회원가입하고 상세 리뷰와 한정 핫딜 혜택을 확인하세요!
-              </p>
-              <button 
-                onClick={onLogin}
-                className="w-full py-3 bg-burgundy text-white rounded-xl font-bold shadow-md"
-              >
-                로그인하고 계속 보기
-              </button>
-            </div>
+      {/* Info Container */}
+      <div className={`p-6 space-y-6 bg-white rounded-t-3xl -mt-6 relative z-10 ${isGuest ? 'overflow-hidden min-h-[500px]' : ''}`}>
+        
+        {isGuest && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/40 backdrop-blur-md p-10 text-center">
+             <div className="kraft-paper p-8 rounded-2xl shadow-xl border border-dashed border-[#800020] space-y-4">
+                <h3 className="text-xl font-bold hand-drawn-font">Special Member Price!</h3>
+                <p className="text-sm text-gray-600">Please sign up to view full details and enjoy exclusive benefits.</p>
+                <Link to="/login" className="block w-full bg-[#800020] text-white py-3 rounded-xl font-bold">
+                  Sign Up in 3 Seconds
+                </Link>
+                <p className="text-[10px] text-gray-400">10% Welcome Coupon issued immediately</p>
+             </div>
           </div>
         )}
 
-        <div className={`p-6 ${!isLoggedIn ? 'blur-[8px]' : ''}`}>
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`text-xs px-2 py-0.5 rounded-full ${product.type === 'limited' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-              {product.type === 'limited' ? '한정 핫딜' : '상시 구매'}
-            </span>
-            {product.stock < 10 && <span className="text-xs text-red-500 font-bold">재고 {product.stock}개 미만!</span>}
-          </div>
-          
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">{product.name}</h1>
-          <div className="flex items-baseline gap-2 mb-4">
-            <span className="text-2xl font-bold text-burgundy">RM {product.price.toFixed(2)}</span>
-            <span className="text-xs text-gray-400">(약 ₩{product.krPrice.toLocaleString()})</span>
-          </div>
-
-          <div className="p-4 bg-gray-50 rounded-2xl mb-6 flex items-center gap-4">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-              <ShieldCheck className="text-green-500" />
+        <div className={isGuest ? 'blurred-guest' : 'space-y-6'}>
+          {/* Header */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-start">
+              <h1 className="text-2xl font-bold leading-tight">{product.name}</h1>
+              {product.isHalal && (
+                <span className="flex-shrink-0 bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded-full font-bold">HALAL</span>
+              )}
             </div>
-            <div>
-              <p className="text-xs font-bold text-gray-800">Halal Certified & Organic</p>
-              <p className="text-[10px] text-gray-500">한국 프리미엄 유기농 인증 완료</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-[#800020]">RM {product.price.toFixed(2)}</span>
+              <span className="text-sm text-gray-400 line-through">RM {product.originalPrice.toFixed(2)}</span>
             </div>
           </div>
 
-          <div className="mb-6">
-            <h4 className="text-sm font-bold mb-2">상품 설명</h4>
-            <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center py-4 border-t border-gray-100">
-              <span className="text-sm font-medium">수량 선택 (인당 최대 5개)</span>
-              <div className="flex items-center border rounded-lg bg-white overflow-hidden">
-                <button 
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-1 text-xl font-medium border-r hover:bg-gray-50"
-                >-</button>
-                <span className="px-5 font-bold">{quantity}</span>
-                <button 
-                  onClick={() => setQuantity(Math.min(5, quantity + 1))}
-                  className="px-3 py-1 text-xl font-medium border-l hover:bg-gray-50"
-                >+</button>
+          {/* Urgent Tags */}
+          <div className="space-y-2">
+            {product.stock < 10 && (
+              <div className="flex items-center gap-2 text-orange-600 text-sm font-bold bg-orange-50 p-2 rounded-lg">
+                <AlertTriangle size={16} /> Only {product.stock} items left in stock!
               </div>
+            )}
+            {product.type === 'B' && (
+              <div className="flex items-center gap-2 text-[#800020] text-sm font-bold bg-pink-50 p-2 rounded-lg">
+                <Clock size={16} /> Deal Ends in: 02d 14h 22m
+              </div>
+            )}
+          </div>
+
+          {/* Quantity Selector */}
+          <div className="flex items-center justify-between py-4 border-y">
+            <span className="font-bold">Quantity</span>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-10 h-10 border rounded-full flex items-center justify-center font-bold"
+              >
+                -
+              </button>
+              <span className="font-bold text-lg">{quantity}</span>
+              <button 
+                onClick={() => setQuantity(Math.min(product.maxOrder, quantity + 1))}
+                className="w-10 h-10 border rounded-full flex items-center justify-center font-bold"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-400 text-right">Max {product.maxOrder} per person</p>
+
+          {/* Description */}
+          <div className="space-y-3">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Info size={18} /> Product Info
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {product.description}
+            </p>
+          </div>
+
+          {/* Delivery Info */}
+          <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-xs">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Shipping From</span>
+              <span className="font-bold text-gray-700">Kuala Lumpur Warehouse</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Delivery Est.</span>
+              <span className="font-bold text-gray-700">4-5 Working Days</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Sticky Bottom CTA */}
-      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-md p-4 bg-white/80 backdrop-blur-md flex gap-3 z-50 shadow-lg border-t border-gray-100">
-        <button className="p-4 rounded-xl border border-gray-200 text-gray-400">
-          <Heart size={20} />
-        </button>
-        <button 
-          onClick={() => onAddToCart(product, quantity)}
-          className="flex-1 bg-burgundy text-white font-bold rounded-xl flex items-center justify-center gap-2 transform active:scale-[0.98] transition"
-        >
-          <ShoppingCart size={20} />
-          <span>장바구니 담기</span>
-        </button>
-      </div>
+      {/* Action Bar */}
+      {!isGuest && (
+        <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto p-4 bg-white/80 backdrop-blur border-t z-50">
+          <div className="flex gap-4">
+            <button className="flex-1 border-2 border-[#800020] text-[#800020] py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+              <ShoppingCart size={20} /> Cart
+            </button>
+            <button className="flex-[2] bg-[#800020] text-white py-4 rounded-2xl font-bold shadow-xl">
+              Buy Now
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
