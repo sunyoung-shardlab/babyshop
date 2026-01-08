@@ -7,8 +7,13 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProfileSetup from './pages/ProfileSetup';
 import ReviewEditor from './pages/ReviewEditor';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentFail from './pages/PaymentFail';
 import { User } from './types';
 import { getCurrentUser, onAuthStateChange, signOut } from './services/authService';
+import { CartProvider } from './contexts/CartContext';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -104,15 +109,20 @@ const App: React.FC = () => {
   }
 
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:id" element={<ProductDetail user={user} />} />
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/profile-setup" element={<ProfileSetup />} />
-          <Route path="/review/:id" element={<ReviewEditor />} />
+    <CartProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/product/:id" element={<ProductDetail user={user} />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/review/:id" element={<ReviewEditor />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/fail" element={<PaymentFail />} />
           {/* Mock MyPage/Likes routes for navigation */}
           <Route path="/mypage" element={
             <div className="p-10 text-center">
@@ -153,6 +163,7 @@ const App: React.FC = () => {
         </Routes>
       </Layout>
     </Router>
+    </CartProvider>
   );
 };
 

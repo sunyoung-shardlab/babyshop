@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MOCK_PRODUCTS, COLORS } from '../constants';
 // Added Clock to the imports from lucide-react
 import { ChevronLeft, Share2, Info, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
 import { User } from '../types';
+import { useCart } from '../contexts/CartContext';
 
 interface ProductDetailProps {
   user: User | null;
@@ -13,6 +13,7 @@ interface ProductDetailProps {
 const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { addToCart, getTotalItems } = useCart();
   const [quantity, setQuantity] = useState(1);
   
   const product = MOCK_PRODUCTS.find(p => p.id === id);
@@ -20,6 +21,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   if (!product) return <div className="p-10 text-center">상품을 찾을 수 없습니다</div>;
 
   const isGuest = !user?.isLoggedIn;
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    alert(`${product.name} ${quantity}개가 장바구니에 추가되었습니다!`);
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product, quantity);
+    navigate('/checkout');
+  };
 
   return (
     <div className="animate-fadeIn">
@@ -132,11 +143,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
       {!isGuest && (
         <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto p-4 bg-white/80 backdrop-blur border-t z-50">
           <div className="flex gap-4">
-            <button className="flex-1 border-2 border-[#800020] text-[#800020] py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+            <button 
+              onClick={handleAddToCart}
+              className="flex-1 border-2 border-[#800020] text-[#800020] py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#800020] hover:text-white transition-colors"
+            >
               <ShoppingCart size={20} /> 장바구니
             </button>
-            <button className="flex-[2] bg-[#800020] text-white py-4 rounded-2xl font-bold shadow-xl">
-              바로 구매
+            <button 
+              onClick={handleBuyNow}
+              className="flex-[2] bg-[#800020] text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-[#600018] transition-colors"
+            >
+              결제하기
             </button>
           </div>
         </div>

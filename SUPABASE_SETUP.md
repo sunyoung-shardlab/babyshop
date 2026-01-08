@@ -49,9 +49,10 @@
 
 ## 3. 현재 프로젝트 설정
 
-- **Project URL**: `https://cnumxvxxyxexzzyeinjr.supabase.co`
-- **Anon Key**: `sb_publishable_plu9g4Kg4EGgxDtvyWyxXQ_azfbaKgh`
-- **Secret Key**: `sb_secret_xaSsS0tZRQHaaKCU7F4m4A_4MZgwTe3`
+프로젝트 설정은 `.env` 파일에 저장되어 있습니다.
+- **Project URL**: Supabase Dashboard에서 확인
+- **Anon Key**: Supabase Dashboard → Settings → API에서 확인
+- **Secret Key**: 서버 사이드에서만 사용 (클라이언트 코드에 포함 금지)
 
 ## 4. 로그인 기능
 

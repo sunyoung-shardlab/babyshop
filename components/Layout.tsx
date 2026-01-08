@@ -1,11 +1,13 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingBag, User, Heart, Menu } from 'lucide-react';
+import { Home, ShoppingBag, User, Heart, ShoppingCart } from 'lucide-react';
 import { COLORS } from '../constants';
+import { useCart } from '../contexts/CartContext';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const { getTotalItems } = useCart();
+  const cartItemCount = getTotalItems();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -16,9 +18,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <Link to="/" className="text-2xl font-bold hand-drawn-font text-[#800020]">
           K-Baby Malaysia
         </Link>
-        <button className="p-2">
-          <Menu size={24} color={COLORS.primary} />
-        </button>
+        <Link to="/cart" className="p-2 relative">
+          <ShoppingCart size={24} color={COLORS.primary} />
+          {cartItemCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {cartItemCount > 9 ? '9+' : cartItemCount}
+            </span>
+          )}
+        </Link>
       </header>
 
       {/* Main Content */}
