@@ -1,15 +1,25 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, ShoppingBag, User, Heart, ShoppingCart } from 'lucide-react';
 import { COLORS } from '../constants';
+import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const { getTotalItems } = useCart();
   const cartItemCount = getTotalItems();
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleCartClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      navigate('/login');
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-[#FAFAFC] shadow-xl relative">
@@ -18,9 +28,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <Link to="/" className="text-2xl font-bold text-[#FF5C02]">
           K-Baby Malaysia
         </Link>
-        <Link to="/cart" className="p-2 relative">
+        <Link to="/cart" onClick={handleCartClick} className="p-2 relative">
           <ShoppingCart size={24} color={COLORS.primary} />
-          {cartItemCount > 0 && (
+          {isLoggedIn && cartItemCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-[#FF3B3B] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               {cartItemCount > 9 ? '9+' : cartItemCount}
             </span>

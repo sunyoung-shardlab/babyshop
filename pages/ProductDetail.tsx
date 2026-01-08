@@ -1,26 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MOCK_PRODUCTS, COLORS } from '../constants';
-// Added Clock to the imports from lucide-react
 import { ChevronLeft, Share2, Info, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
-import { User } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
-interface ProductDetailProps {
-  user: User | null;
-}
-
-const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
+const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { addToCart, getTotalItems } = useCart();
+  const { isLoggedIn } = useAuth();
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   
   const product = MOCK_PRODUCTS.find(p => p.id === id);
 
-  if (!product) return <div className="p-10 text-center">상품을 찾을 수 없습니다</div>;
+  if (!product) return <div className="p-10 text-center bg-[#FAFAFC] min-h-screen">상품을 찾을 수 없습니다</div>;
 
-  const isGuest = !user?.isLoggedIn;
+  const isGuest = !isLoggedIn;
 
   const handleAddToCart = () => {
     addToCart(product, quantity);

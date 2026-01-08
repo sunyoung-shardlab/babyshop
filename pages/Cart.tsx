@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const { cart, removeFromCart, updateQuantity, getTotalPrice, getTotalItems } = useCart();
+
+  // 비로그인 시 로그인 페이지로 리다이렉트
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login');
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleCheckout = () => {
     if (cart.length === 0) {

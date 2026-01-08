@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmail, signInWithGoogle, validateUsername, validatePassword } from '../services/authService';
+import { signInWithEmail, signInWithGoogle } from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 import { COLORS } from '../constants';
 
-const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
+const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [formData, setFormData] = useState({
     emailOrUsername: '',
     password: '',
@@ -64,8 +66,8 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       }
       
       const { user } = await signInWithEmail(formData.emailOrUsername, formData.password);
-      onLogin(user);
-      navigate('/profile-setup');
+      signIn(user);
+      navigate('/');
     } catch (error: any) {
       if (error.message.includes('Invalid login credentials')) {
         alert('이메일 또는 비밀번호가 올바르지 않습니다.');
