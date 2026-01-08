@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User as AuthUser } from '@supabase/supabase-js';
-import { supabase } from '../services/authService';
-import { onAuthStateChange, signOut } from '../services/authService';
+import { supabase, signOut as authSignOut } from '../services/authService';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -36,39 +35,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // 초기 세션 확인 (더 안정적)
+    let mounted = true;
+
+    // 초기 세션 확인
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('Initial session:', session); // 디버깅용
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('🔍 Initial session check:', { session, error }); // 디버깅용
         
-        if (session?.user) {
-          setAuthUser(session.user);
-          setUser(convertAuthUserToUser(session.user));
+        if (mounted) {
+          if (session?.user) {
+            console.log('✅ User logged in:', session.user.email);
+            setAuthUser(session.user);
+            setUser(convertAuthUserToUser(session.user));
+          } else {
+            console.log('❌ No session found');
+          }
+          setLoading(false);
         }
       } catch (error) {
-        console.error('Auth init error:', error);
-      } finally {
-        setLoading(false);
+        console.error('❌ Auth init error:', error);
+        if (mounted) setLoading(false);
       }
     };
 
     initAuth();
 
     // 인증 상태 변화 감지
-    const { data: { subscription } } = onAuthStateChange((authUser) => {
-      console.log('Auth state changed:', authUser); // 디버깅용
-      
-      if (authUser) {
-        setAuthUser(authUser);
-        setUser(convertAuthUserToUser(authUser));
-      } else {
-        setAuthUser(null);
-        setUser(null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔄 Auth state changed:', { event, session }); // 디버깅용
+        
+        if (mounted) {
+          if (session?.user) {
+            console.log('✅ User state updated:', session.user.email);
+            setAuthUser(session.user);
+            setUser(convertAuthUserToUser(session.user));
+          } else {
+            console.log('❌ User signed out');
+            setAuthUser(null);
+            setUser(null);
+          }
+        }
       }
-    });
+    );
 
     return () => {
+      mounted = false;
       subscription?.unsubscribe();
     };
   }, []);
@@ -79,10 +92,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    setUser(null);
-    setAuthUser(null);
-    window.location.hash = '#/';
+    try {
+      await authSignOut();
+      setUser(null);
+      setAuthUser(null);
+      window.location.hash = '#/';
+    } catch (error) {
+      console.error('Signout error:', error);
+    }
   };
 
   return (
