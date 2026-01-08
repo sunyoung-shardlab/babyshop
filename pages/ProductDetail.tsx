@@ -30,7 +30,7 @@ const ProductDetail: React.FC = () => {
   };
 
   return (
-    <div className="animate-fadeIn">
+    <div className="animate-fadeIn pb-32">
       {/* Top Bar */}
       <div className="p-4 flex justify-between items-center absolute top-0 left-0 right-0 z-10 max-w-md mx-auto">
         <button onClick={() => navigate(-1)} className="p-2 bg-white/80 backdrop-blur rounded-full">
@@ -47,7 +47,7 @@ const ProductDetail: React.FC = () => {
       </div>
 
       {/* Info Container */}
-      <div className={`p-6 space-y-6 bg-[#FAFAFC] rounded-t-3xl -mt-6 relative z-10 ${isGuest ? 'overflow-hidden min-h-[500px]' : ''}`}>
+      <div className={`p-6 space-y-6 bg-[#FAFAFC] rounded-t-3xl -mt-6 relative z-10 ${isGuest ? 'overflow-hidden min-h-[500px]' : 'pb-8'}`}>
         
         {isGuest && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/40 backdrop-blur-md p-10 text-center">
@@ -138,7 +138,7 @@ const ProductDetail: React.FC = () => {
 
       {/* Action Bar */}
       {!isGuest && (
-        <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto p-4 bg-white/80 backdrop-blur border-t border-[#E7EBEF] z-50">
+        <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto p-4 bg-white/95 backdrop-blur-md border-t border-[#E7EBEF] z-50 shadow-lg">
           <div className="flex gap-3">
             <button 
               onClick={handleAddToCart}
