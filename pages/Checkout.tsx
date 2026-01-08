@@ -72,29 +72,29 @@ const Checkout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] pb-32">
+    <div className="min-h-screen bg-[#FAFAFC] pb-32">
       {/* 헤더 */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-white border-b border-[#E7EBEF] sticky top-0 z-10">
         <div className="p-4 flex items-center gap-4">
-          <button onClick={() => navigate(-1)}>
+          <button onClick={() => navigate(-1)} className="text-[#1C1C1C]">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold">주문/결제</h1>
+          <h1 className="text-xl font-bold text-[#1C1C1C]">주문/결제</h1>
         </div>
       </div>
 
       <div className="p-6 space-y-6 max-w-4xl mx-auto">
         {/* 배송 정보 */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <MapPin className="text-[#800020]" size={20} />
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#E7EBEF] space-y-4">
+          <h2 className="text-lg font-bold flex items-center gap-2 text-[#1C1C1C]">
+            <MapPin className="text-[#FF5C02]" size={20} />
             배송 정보
           </h2>
           
           <div className="space-y-3">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
-                받는 사람 <span className="text-red-500">*</span>
+              <label className="block text-sm text-[#555770] mb-1">
+                받는 사람 <span className="text-[#FF3B3B]">*</span>
               </label>
               <input
                 type="text"
@@ -102,13 +102,13 @@ const Checkout: React.FC = () => {
                 value={orderInfo.name}
                 onChange={handleInputChange}
                 placeholder="이름을 입력하세요"
-                className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#800020] outline-none"
+                className="w-full p-3 border border-[#E7EBEF] rounded-lg focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
-                연락처 <span className="text-red-500">*</span>
+              <label className="block text-sm text-[#555770] mb-1">
+                연락처 <span className="text-[#FF3B3B]">*</span>
               </label>
               <input
                 type="tel"
@@ -116,13 +116,13 @@ const Checkout: React.FC = () => {
                 value={orderInfo.phone}
                 onChange={handleInputChange}
                 placeholder="010-1234-5678"
-                className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#800020] outline-none"
+                className="w-full p-3 border border-[#E7EBEF] rounded-lg focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
-                주소 <span className="text-red-500">*</span>
+              <label className="block text-sm text-[#555770] mb-1">
+                주소 <span className="text-[#FF3B3B]">*</span>
               </label>
               <input
                 type="text"
@@ -130,12 +130,12 @@ const Checkout: React.FC = () => {
                 value={orderInfo.address}
                 onChange={handleInputChange}
                 placeholder="도로명 주소"
-                className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#800020] outline-none"
+                className="w-full p-3 border border-[#E7EBEF] rounded-lg focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-[#555770] mb-1">
                 상세 주소
               </label>
               <input
@@ -144,12 +144,12 @@ const Checkout: React.FC = () => {
                 value={orderInfo.detailAddress}
                 onChange={handleInputChange}
                 placeholder="상세 주소"
-                className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#800020] outline-none"
+                className="w-full p-3 border border-[#E7EBEF] rounded-lg focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-[#555770] mb-1">
                 배송 메모
               </label>
               <textarea
@@ -158,27 +158,27 @@ const Checkout: React.FC = () => {
                 onChange={handleInputChange}
                 placeholder="배송 시 요청사항을 입력하세요"
                 rows={3}
-                className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#800020] outline-none resize-none"
+                className="w-full p-3 border border-[#E7EBEF] rounded-lg focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none resize-none"
               />
             </div>
           </div>
         </div>
 
         {/* 주문 상품 */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold">주문 상품 ({cart.length}개)</h2>
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#E7EBEF] space-y-4">
+          <h2 className="text-lg font-bold text-[#1C1C1C]">주문 상품 ({cart.length}개)</h2>
           <div className="space-y-3">
             {cart.map((item) => (
-              <div key={item.product.id} className="flex gap-4 pb-3 border-b last:border-0">
+              <div key={item.product.id} className="flex gap-4 pb-3 border-b border-[#E7EBEF] last:border-0">
                 <img
                   src={item.product.image}
                   alt={item.product.name}
-                  className="w-20 h-20 object-cover rounded-xl"
+                  className="w-20 h-20 object-cover rounded-lg"
                 />
                 <div className="flex-1">
-                  <h3 className="font-bold mb-1">{item.product.name}</h3>
-                  <p className="text-sm text-gray-500">수량: {item.quantity}개</p>
-                  <p className="text-lg font-bold text-[#800020] mt-1">
+                  <h3 className="font-bold mb-1 text-[#1C1C1C]">{item.product.name}</h3>
+                  <p className="text-sm text-[#8F90A6]">수량: {item.quantity}개</p>
+                  <p className="text-lg font-bold text-[#FF5C02] mt-1">
                     RM {(item.product.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
@@ -188,20 +188,20 @@ const Checkout: React.FC = () => {
         </div>
 
         {/* 결제 금액 */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm space-y-3">
-          <h2 className="text-lg font-bold">결제 금액</h2>
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-[#E7EBEF] space-y-3">
+          <h2 className="text-lg font-bold text-[#1C1C1C]">결제 금액</h2>
           <div className="space-y-2">
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between text-[#555770]">
               <span>상품 금액</span>
               <span>RM {getTotalPrice().toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between text-[#555770]">
               <span>배송비</span>
-              <span className="text-green-600">무료</span>
+              <span className="text-[#06C270]">무료</span>
             </div>
-            <div className="border-t pt-3 flex justify-between">
-              <span className="text-xl font-bold">총 결제금액</span>
-              <span className="text-2xl font-bold text-[#800020]">
+            <div className="border-t border-[#E7EBEF] pt-3 flex justify-between">
+              <span className="text-xl font-bold text-[#1C1C1C]">총 결제금액</span>
+              <span className="text-2xl font-bold text-[#FF5C02]">
                 RM {getTotalPrice().toFixed(2)}
               </span>
             </div>
@@ -209,17 +209,17 @@ const Checkout: React.FC = () => {
         </div>
 
         {/* 주문 동의 */}
-        <div className="bg-gray-50 rounded-2xl p-4 text-sm text-gray-600">
+        <div className="bg-[#F2F2F5] rounded-lg p-4 text-sm text-[#555770]">
           <p>결제하기 버튼을 누르시면 주문 내용 확인 및 결제 대행 서비스 약관에 동의한 것으로 간주합니다.</p>
         </div>
       </div>
 
       {/* 결제 버튼 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 max-w-4xl mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E7EBEF] p-4 max-w-4xl mx-auto">
         <button
           onClick={handlePayment}
           disabled={isProcessing}
-          className="w-full bg-[#800020] text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-[#600018] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-[#FF5C02] text-white py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-[#FF7022] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isProcessing ? '처리 중...' : `RM ${getTotalPrice().toFixed(2)} 결제하기`}
         </button>

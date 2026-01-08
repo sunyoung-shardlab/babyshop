@@ -77,25 +77,25 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="p-10 flex flex-col h-full justify-center space-y-8 bg-[#FDFBF7]">
+    <div className="p-10 flex flex-col h-full justify-center space-y-8 bg-[#FAFAFC]">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold hand-drawn-font text-[#800020]">환영합니다!</h1>
-        <p className="text-sm text-gray-500">계정을 만들고 특별한 혜택을 받아보세요.</p>
+        <h1 className="text-4xl font-bold text-[#1C1C1C]">환영합니다!</h1>
+        <p className="text-sm text-[#555770]">계정을 만들고 특별한 혜택을 받아보세요.</p>
       </div>
 
       <div className="space-y-4">
         <button 
           onClick={handleGoogleSignup}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 bg-white border py-4 rounded-2xl font-bold shadow-sm hover:shadow-md transition-shadow disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-3 bg-white border border-[#E7EBEF] py-4 rounded-lg font-bold shadow-sm hover:shadow-md transition-shadow disabled:opacity-50"
         >
           <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="G" />
           구글로 계속하기
         </button>
         
         <div className="relative">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t"></div></div>
-          <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#FDFBF7] px-2 text-gray-400">또는</span></div>
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#E7EBEF]"></div></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#FAFAFC] px-2 text-[#8F90A6]">또는</span></div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -106,10 +106,10 @@ const Signup: React.FC = () => {
               value={formData.username}
               onChange={handleChange}
               placeholder="아이디 (5자 이상, 영문/숫자)" 
-              className={`w-full p-4 rounded-2xl border focus:ring-2 focus:ring-[#800020] outline-none ${errors.username ? 'border-red-500' : ''}`}
+              className={`w-full p-4 rounded-lg border border-[#E7EBEF] focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none bg-white ${errors.username ? 'border-[#FF3B3B]' : ''}`}
               disabled={loading}
             />
-            {errors.username && <p className="text-red-500 text-xs mt-1 ml-2">{errors.username}</p>}
+            {errors.username && <p className="text-[#FF3B3B] text-xs mt-1 ml-2">{errors.username}</p>}
           </div>
 
           <div>
@@ -119,10 +119,10 @@ const Signup: React.FC = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="이메일" 
-              className={`w-full p-4 rounded-2xl border focus:ring-2 focus:ring-[#800020] outline-none ${errors.email ? 'border-red-500' : ''}`}
+              className={`w-full p-4 rounded-lg border border-[#E7EBEF] focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none bg-white ${errors.email ? 'border-[#FF3B3B]' : ''}`}
               disabled={loading}
             />
-            {errors.email && <p className="text-red-500 text-xs mt-1 ml-2">{errors.email}</p>}
+            {errors.email && <p className="text-[#FF3B3B] text-xs mt-1 ml-2">{errors.email}</p>}
           </div>
           
           <div>
@@ -132,10 +132,10 @@ const Signup: React.FC = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="비밀번호 (6자 이상)" 
-              className={`w-full p-4 rounded-2xl border focus:ring-2 focus:ring-[#800020] outline-none ${errors.password ? 'border-red-500' : ''}`}
+              className={`w-full p-4 rounded-lg border border-[#E7EBEF] focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none bg-white ${errors.password ? 'border-[#FF3B3B]' : ''}`}
               disabled={loading}
             />
-            {errors.password && <p className="text-red-500 text-xs mt-1 ml-2">{errors.password}</p>}
+            {errors.password && <p className="text-[#FF3B3B] text-xs mt-1 ml-2">{errors.password}</p>}
           </div>
 
           <div>
@@ -145,27 +145,27 @@ const Signup: React.FC = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="비밀번호 확인" 
-              className={`w-full p-4 rounded-2xl border focus:ring-2 focus:ring-[#800020] outline-none ${errors.confirmPassword ? 'border-red-500' : ''}`}
+              className={`w-full p-4 rounded-lg border border-[#E7EBEF] focus:ring-2 focus:ring-[#FF5C02] focus:border-[#FF5C02] outline-none bg-white ${errors.confirmPassword ? 'border-[#FF3B3B]' : ''}`}
               disabled={loading}
             />
-            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1 ml-2">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && <p className="text-[#FF3B3B] text-xs mt-1 ml-2">{errors.confirmPassword}</p>}
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-[#800020] text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-[#600018] transition-colors disabled:opacity-50"
+            className="w-full bg-[#FF5C02] text-white py-4 rounded-lg font-bold shadow-lg hover:bg-[#FF7022] transition-colors disabled:opacity-50"
           >
             {loading ? '처리중...' : '회원가입'}
           </button>
         </form>
       </div>
 
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-[#8F90A6]">
         이미 계정이 있으신가요?{' '}
         <span 
           onClick={() => navigate('/login')} 
-          className="text-[#800020] font-bold cursor-pointer underline"
+          className="text-[#FF5C02] font-bold cursor-pointer underline"
         >
           로그인하기
         </span>

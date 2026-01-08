@@ -2,10 +2,22 @@
 import { Product, ContentTip } from './types';
 
 export const COLORS = {
-  primary: '#800020', // Burgundy/Burgundy-ish
-  secondary: '#2F4F4F', // Dark Green
-  kraft: '#F4F1EA',
-  redAccent: '#EF4444',
+  primary: '#FF5C02', // Primary Orange from Figma
+  primaryLight: '#FFC9AB', // Light Orange
+  secondary: '#4A4A4A', // Dark Gray
+  background: '#FAFAFC', // Light Background
+  backgroundLight: '#FFFFFF',
+  text: '#1C1C1C',
+  textSecondary: '#555770',
+  textGray: '#8F90A6',
+  white: '#FFFFFF',
+  gray: '#C7C9D9',
+  lightGray: '#F2F2F5',
+  border: '#E7EBEF',
+  success: '#06C270',
+  error: '#FF3B3B',
+  kraft: '#F4F1EA', // Keep for compatibility
+  redAccent: '#EF4444', // Keep for compatibility
 };
 
 export const MOCK_PRODUCTS: Product[] = [

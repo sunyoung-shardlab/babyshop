@@ -12,16 +12,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-white shadow-xl relative">
+    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-[#FAFAFC] shadow-xl relative">
       {/* Header */}
-      <header className="p-4 border-b flex justify-between items-center bg-[#FDFBF7] sticky top-0 z-50">
-        <Link to="/" className="text-2xl font-bold hand-drawn-font text-[#800020]">
+      <header className="p-4 border-b border-[#E7EBEF] flex justify-between items-center bg-white sticky top-0 z-50">
+        <Link to="/" className="text-2xl font-bold text-[#FF5C02]">
           K-Baby Malaysia
         </Link>
         <Link to="/cart" className="p-2 relative">
           <ShoppingCart size={24} color={COLORS.primary} />
           {cartItemCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-[#FF3B3B] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               {cartItemCount > 9 ? '9+' : cartItemCount}
             </span>
           )}
@@ -34,22 +34,22 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </main>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t flex justify-around py-2 px-4 z-50">
-        <Link to="/" className={`flex flex-col items-center p-2 ${isActive('/') ? 'text-[#800020]' : 'text-gray-400'}`}>
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-[#E7EBEF] flex justify-around py-2 px-4 z-50 shadow-lg">
+        <Link to="/" className={`flex flex-col items-center p-2 ${isActive('/') ? 'text-[#FF5C02]' : 'text-[#C7C9D9]'}`}>
           <Home size={20} />
-          <span className="text-[10px] mt-1">홈</span>
+          <span className="text-[10px] mt-1 font-medium">홈</span>
         </Link>
-        <Link to="/products" className={`flex flex-col items-center p-2 ${isActive('/products') ? 'text-[#800020]' : 'text-gray-400'}`}>
+        <Link to="/products" className={`flex flex-col items-center p-2 ${isActive('/products') ? 'text-[#FF5C02]' : 'text-[#C7C9D9]'}`}>
           <ShoppingBag size={20} />
-          <span className="text-[10px] mt-1">쇼핑</span>
+          <span className="text-[10px] mt-1 font-medium">쇼핑</span>
         </Link>
-        <Link to="/likes" className={`flex flex-col items-center p-2 ${isActive('/likes') ? 'text-[#800020]' : 'text-gray-400'}`}>
+        <Link to="/likes" className={`flex flex-col items-center p-2 ${isActive('/likes') ? 'text-[#FF5C02]' : 'text-[#C7C9D9]'}`}>
           <Heart size={20} />
-          <span className="text-[10px] mt-1">찜</span>
+          <span className="text-[10px] mt-1 font-medium">찜</span>
         </Link>
-        <Link to="/mypage" className={`flex flex-col items-center p-2 ${isActive('/mypage') ? 'text-[#800020]' : 'text-gray-400'}`}>
+        <Link to="/mypage" className={`flex flex-col items-center p-2 ${isActive('/mypage') ? 'text-[#FF5C02]' : 'text-[#C7C9D9]'}`}>
           <User size={20} />
-          <span className="text-[10px] mt-1">마이페이지</span>
+          <span className="text-[10px] mt-1 font-medium">마이페이지</span>
         </Link>
       </nav>
     </div>
