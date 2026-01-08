@@ -6,15 +6,27 @@ import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
   const { cart, removeFromCart, updateQuantity, getTotalPrice, getTotalItems } = useCart();
 
   // 비로그인 시 로그인 페이지로 리다이렉트
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!loading && !isLoggedIn) {
       navigate('/login');
     }
-  }, [isLoggedIn, navigate]);
+  }, [loading, isLoggedIn, navigate]);
+
+  // 로딩 중
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#FAFAFC]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF5C02] mx-auto"></div>
+          <p className="mt-4 text-[#8F90A6]">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleCheckout = () => {
     if (cart.length === 0) {

@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem, Product } from '../types';
-import { supabase } from '../services/authService';
+import { supabase, getCurrentUser } from '../services/authService';
 import { MOCK_PRODUCTS } from '../constants';
-import { useAuth } from './AuthContext';
 
 interface CartContextType {
   cart: CartItem[];
@@ -18,31 +17,65 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { authUser, isLoggedIn } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // 장바구니 로드
+  // 사용자 ID 추적
   useEffect(() => {
-    if (isLoggedIn && authUser) {
-      loadCartFromDB();
-    } else {
-      loadCartFromLocalStorage();
-    }
-    setLoading(false);
-  }, [isLoggedIn, authUser]);
+    const initUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id || null;
+        setCurrentUserId(userId);
+        
+        if (userId) {
+          await loadCartFromDB(userId);
+        } else {
+          loadCartFromLocalStorage();
+        }
+      } catch (error) {
+        console.error('Cart init error:', error);
+        loadCartFromLocalStorage();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initUser();
+
+    // Auth 상태 변화 감지
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const userId = session?.user?.id || null;
+      setCurrentUserId(userId);
+
+      if (userId) {
+        await loadCartFromDB(userId);
+      } else {
+        loadCartFromLocalStorage();
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
 
   // DB에서 장바구니 로드
-  const loadCartFromDB = async () => {
-    if (!authUser) return;
+  const loadCartFromDB = async (userId: string) => {
+    if (!userId) return;
     
     try {
       const { data, error } = await supabase
         .from('cart_items')
         .select('*')
-        .eq('user_id', authUser.id);
+        .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('장바구니 로드 오류:', error);
+        loadCartFromLocalStorage(); // Fallback to local storage
+        return;
+      }
 
       if (data) {
         const cartItems: CartItem[] = data.map(item => {
@@ -68,28 +101,28 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (loading) return;
 
-    if (isLoggedIn && authUser) {
-      syncCartToDB();
+    if (currentUserId) {
+      syncCartToDB(currentUserId);
     } else {
       localStorage.setItem('cart', JSON.stringify(cart));
     }
-  }, [cart, isLoggedIn, authUser]);
+  }, [cart, currentUserId, loading]);
 
   // DB와 동기화
-  const syncCartToDB = async () => {
-    if (!authUser) return;
+  const syncCartToDB = async (userId: string) => {
+    if (!userId) return;
 
     try {
       // 기존 장바구니 삭제
       await supabase
         .from('cart_items')
         .delete()
-        .eq('user_id', authUser.id);
+        .eq('user_id', userId);
 
       // 새로운 장바구니 저장
       if (cart.length > 0) {
         const cartData = cart.map(item => ({
-          user_id: authUser.id,
+          user_id: userId,
           product_id: item.product.id,
           quantity: item.quantity,
         }));
@@ -98,7 +131,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('cart_items')
           .insert(cartData);
 
-        if (error) throw error;
+        if (error) {
+          console.error('장바구니 저장 오류:', error);
+        }
       }
     } catch (error) {
       console.error('장바구니 동기화 실패:', error);

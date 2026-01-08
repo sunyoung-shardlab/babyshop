@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User as AuthUser } from '@supabase/supabase-js';
-import { getCurrentUser, onAuthStateChange, signOut } from '../services/authService';
+import { supabase } from '../services/authService';
+import { onAuthStateChange, signOut } from '../services/authService';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -35,17 +36,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // 초기 사용자 확인
-    getCurrentUser().then(authUser => {
-      if (authUser) {
-        setAuthUser(authUser);
-        setUser(convertAuthUserToUser(authUser));
+    // 초기 세션 확인 (더 안정적)
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initial session:', session); // 디버깅용
+        
+        if (session?.user) {
+          setAuthUser(session.user);
+          setUser(convertAuthUserToUser(session.user));
+        }
+      } catch (error) {
+        console.error('Auth init error:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    initAuth();
 
     // 인증 상태 변화 감지
     const { data: { subscription } } = onAuthStateChange((authUser) => {
+      console.log('Auth state changed:', authUser); // 디버깅용
+      
       if (authUser) {
         setAuthUser(authUser);
         setUser(convertAuthUserToUser(authUser));

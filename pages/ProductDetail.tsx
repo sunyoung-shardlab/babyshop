@@ -8,7 +8,7 @@ import { useCart } from '../contexts/CartContext';
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   
@@ -16,7 +16,8 @@ const ProductDetail: React.FC = () => {
 
   if (!product) return <div className="p-10 text-center bg-[#FAFAFC] min-h-screen">상품을 찾을 수 없습니다</div>;
 
-  const isGuest = !isLoggedIn;
+  // 로딩 중에는 게스트로 취급하지 않음
+  const isGuest = !loading && !isLoggedIn;
 
   const handleAddToCart = () => {
     addToCart(product, quantity);

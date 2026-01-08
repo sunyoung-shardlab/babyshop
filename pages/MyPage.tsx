@@ -5,14 +5,26 @@ import { User as UserIcon, Package, Heart, LogOut } from 'lucide-react';
 
 const MyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isLoggedIn, signOut } = useAuth();
+  const { user, isLoggedIn, loading, signOut } = useAuth();
 
   // 비로그인 시 로그인 페이지로 리다이렉트
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!loading && !isLoggedIn) {
       navigate('/login');
     }
-  }, [isLoggedIn, navigate]);
+  }, [loading, isLoggedIn, navigate]);
+
+  // 로딩 중
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#FAFAFC]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF5C02] mx-auto"></div>
+          <p className="mt-4 text-[#8F90A6]">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isLoggedIn || !user) {
     return null;
