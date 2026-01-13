@@ -118,35 +118,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('✅ [handleSignOut] Supabase signOut completed');
       }
       
-      // 2. 로컬 상태 초기화
-      setUser(null);
-      setAuthUser(null);
-      
-      // 3. localStorage 정리
+      // 2. localStorage 정리
       localStorage.clear();
       
-      // 4. 홈으로 리다이렉트
+      // 3. 홈으로 즉시 리다이렉트 (상태 업데이트 전에!)
       console.log('✅ [handleSignOut] Logout complete! Redirecting to home...');
-      window.location.href = '/#/';
+      window.location.replace('/#/');
       
-      // 5. 새로고침
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      // 4. 로컬 상태 초기화 (리다이렉트 후에는 실행 안 됨)
+      setUser(null);
+      setAuthUser(null);
       
     } catch (error) {
       console.error('⚠️ [handleSignOut] Error during logout:', error);
       
-      // 에러 발생해도 강제 로그아웃
-      setUser(null);
-      setAuthUser(null);
+      // localStorage 정리
       localStorage.clear();
       
-      console.log('⚠️ [handleSignOut] Force logout and redirecting...');
-      window.location.href = '/#/';
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      // 홈으로 즉시 리다이렉트
+      console.log('⚠️ [handleSignOut] Force logout and redirecting to home...');
+      window.location.replace('/#/');
+      
+      // 로컬 상태 초기화 (리다이렉트 후에는 실행 안 됨)
+      setUser(null);
+      setAuthUser(null);
     }
   };
 
