@@ -143,13 +143,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => reject(new Error('Logout timeout after 10s')), 10000);
         });
         
-      // 🧪 테스트: 강제로 에러 발생 (나중에 삭제!)
-      // throw new Error('Test error for Slack notification');
-      
-      await Promise.race([
-        authSignOut(),
-        timeoutPromise
-      ]);
+        await Promise.race([
+          authSignOut(),
+          timeoutPromise
+        ]);
         
         console.log('✅ [handleSignOut] Supabase signOut completed');
       }
