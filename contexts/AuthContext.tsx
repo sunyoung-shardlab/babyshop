@@ -135,20 +135,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('🚪 [handleSignOut] Starting logout...');
     
     try {
-      // 1. Supabase 로그아웃 (타임아웃 10초)
+      // 1. Supabase 로그아웃 (타임아웃 5초 - 단축)
       if (supabase) {
-        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 10s)...');
+        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 5s)...');
         
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Logout timeout after 10s')), 10000);
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Logout timeout after 5s')), 5000);
         });
         
-        await Promise.race([
-          authSignOut(),
-          timeoutPromise
-        ]);
-        
-        console.log('✅ [handleSignOut] Supabase signOut completed');
+        try {
+          await Promise.race([
+            authSignOut(),
+            timeoutPromise
+          ]);
+          
+          console.log('✅ [handleSignOut] Supabase signOut completed');
+        } catch (signOutError: any) {
+          // 타임아웃 또는 403 session_not_found 에러
+          console.warn('⚠️ [handleSignOut] Supabase signOut failed:', signOutError?.message);
+          
+          // session_not_found 또는 타임아웃은 로컬 로그아웃 진행
+          if (
+            signOutError?.message?.includes('timeout') ||
+            signOutError?.message?.includes('session_not_found')
+          ) {
+            console.log('→ Invalid session detected. Forcing local logout...');
+            // 로컬 로그아웃 계속 진행
+          } else {
+            // 다른 에러는 실패 처리
+            throw signOutError;
+          }
+        }
       }
       
       // 2. localStorage 정리

@@ -185,11 +185,12 @@ export const signOut = async () => {
     throw new Error('Supabase not initialized');
   }
 
-  console.log('🔍 [signOut] Calling supabase.auth.signOut()...');
+  console.log('🔍 [signOut] Calling supabase.auth.signOut() with scope: local...');
   const startTime = Date.now();
   
   try {
-    const { error } = await supabase.auth.signOut();
+    // scope: 'local' → 서버 검증 없이 로컬만 정리 (빠름!)
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
     const duration = Date.now() - startTime;
     
     if (error) {
