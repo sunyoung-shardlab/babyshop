@@ -100,12 +100,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleSignOut = async () => {
     try {
+      console.log('🚪 Starting logout...');
+      
+      // 1. Supabase 로그아웃
       await authSignOut();
+      
+      // 2. 로컬 상태 즉시 초기화
       setUser(null);
       setAuthUser(null);
-      window.location.hash = '#/';
+      
+      // 3. localStorage 완전 정리
+      localStorage.clear();
+      
+      // 4. 홈으로 이동 후 강제 새로고침
+      window.location.href = '/#/';
+      window.location.reload();
+      
+      console.log('✅ Logout completed');
     } catch (error) {
-      console.error('Signout error:', error);
+      console.error('❌ Logout error:', error);
+      
+      // 에러가 발생해도 강제로 로그아웃 처리
+      setUser(null);
+      setAuthUser(null);
+      localStorage.clear();
+      window.location.href = '/#/';
+      window.location.reload();
     }
   };
 
