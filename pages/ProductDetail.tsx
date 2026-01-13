@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MOCK_PRODUCTS, COLORS } from '../constants';
+import { COLORS } from '../constants';
 import { ChevronLeft, Share2, Info, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { Product } from '../types';
+import { getProductById, incrementProductView } from '../services/productService';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,8 +13,42 @@ const ProductDetail: React.FC = () => {
   const { isLoggedIn, loading } = useAuth();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [productLoading, setProductLoading] = useState(true);
   
-  const product = MOCK_PRODUCTS.find(p => p.id === id);
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) return;
+      
+      try {
+        setProductLoading(true);
+        const productData = await getProductById(id);
+        setProduct(productData);
+        
+        // 조회수 증가 (비동기로 실행, 에러 무시)
+        if (productData) {
+          incrementProductView(id).catch(console.error);
+        }
+      } catch (error) {
+        console.error('제품 로드 실패:', error);
+      } finally {
+        setProductLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
+
+  if (productLoading) {
+    return (
+      <div className="p-10 text-center bg-[#FAFAFC] min-h-screen">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) return <div className="p-10 text-center bg-[#FAFAFC] min-h-screen">상품을 찾을 수 없습니다</div>;
 
@@ -43,7 +79,7 @@ const ProductDetail: React.FC = () => {
 
       {/* Image */}
       <div className="aspect-square bg-[#F2F2F5] overflow-hidden">
-        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+        <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover" />
       </div>
 
       {/* Info Container */}
@@ -67,24 +103,26 @@ const ProductDetail: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold leading-tight text-[#1C1C1C]">{product.name}</h1>
-              {product.isHalal && (
+              {product.is_halal && (
                 <span className="flex-shrink-0 bg-[#E3FFF1] text-[#06C270] text-[10px] px-2 py-1 rounded-full font-bold">HALAL</span>
               )}
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-black text-[#FF5C02]">RM {product.price.toFixed(2)}</span>
-              <span className="text-sm text-[#8F90A6] line-through">RM {product.originalPrice.toFixed(2)}</span>
+              {product.original_price && (
+                <span className="text-sm text-[#8F90A6] line-through">RM {product.original_price.toFixed(2)}</span>
+              )}
             </div>
           </div>
 
           {/* Urgent Tags */}
           <div className="space-y-2">
-            {product.stock < 10 && (
+            {product.stock_quantity < 10 && (
               <div className="flex items-center gap-2 text-[#FF8800] text-sm font-bold bg-[#FFF8E5] p-3 rounded-lg border border-[#FFDB43]">
-                <AlertTriangle size={16} /> 재고 {product.stock}개만 남았습니다!
+                <AlertTriangle size={16} /> 재고 {product.stock_quantity}개만 남았습니다!
               </div>
             )}
-            {product.type === 'B' && (
+            {product.sale_end_date && (
               <div className="flex items-center gap-2 text-[#FF5C02] text-sm font-bold bg-[#FFE5E5] p-3 rounded-lg border border-[#FFC9AB]">
                 <Clock size={16} /> 특가 종료까지: 02일 14시간 22분
               </div>
@@ -103,14 +141,14 @@ const ProductDetail: React.FC = () => {
               </button>
               <span className="font-bold text-lg text-[#1C1C1C]">{quantity}</span>
               <button 
-                onClick={() => setQuantity(Math.min(product.maxOrder, quantity + 1))}
+                onClick={() => setQuantity(Math.min(product.max_order_quantity, quantity + 1))}
                 className="w-10 h-10 border border-[#E7EBEF] rounded-lg flex items-center justify-center font-bold hover:bg-[#F2F2F5] transition-colors"
               >
                 +
               </button>
             </div>
           </div>
-          <p className="text-[10px] text-[#8F90A6] text-right">1인당 최대 {product.maxOrder}개</p>
+          <p className="text-[10px] text-[#8F90A6] text-right">1인당 최대 {product.max_order_quantity}개</p>
 
           {/* Description */}
           <div className="space-y-3">

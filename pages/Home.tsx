@@ -1,10 +1,36 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MOCK_PRODUCTS, MOCK_TIPS, COLORS } from '../constants';
+import { MOCK_TIPS, COLORS } from '../constants';
 import { ArrowRight, Star, Clock } from 'lucide-react';
+import { Product } from '../types';
+import { getTimeDealProducts, getRegularProducts } from '../services/productService';
 
 const Home: React.FC = () => {
+  const [timeDealProducts, setTimeDealProducts] = useState<Product[]>([]);
+  const [regularProducts, setRegularProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const [timeDeals, regular] = await Promise.all([
+          getTimeDealProducts(),
+          getRegularProducts()
+        ]);
+        setTimeDealProducts(timeDeals);
+        setRegularProducts(regular);
+      } catch (error) {
+        console.error('제품 로드 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
   return (
     <div className="space-y-8 animate-fadeIn bg-[#FAFAFC] min-h-screen">
       {/* Hero Section */}
@@ -33,46 +59,64 @@ const Home: React.FC = () => {
           </h2>
           <span className="text-xs text-[#8F90A6]">주간 업데이트</span>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-          {MOCK_PRODUCTS.filter(p => p.type === 'B').map(product => (
-            <Link key={product.id} to={`/product/${product.id}`} className="flex-shrink-0 w-64 border border-[#E7EBEF] rounded-lg overflow-hidden bg-white group shadow-sm hover:shadow-md transition-shadow">
-              <div className="relative aspect-square overflow-hidden">
-                <img src={product.image} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
-                <div className="absolute top-2 left-2 bg-[#FF5C02] text-white px-2 py-1 text-[10px] rounded font-bold">
-                  핫딜
+        {loading ? (
+          <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex-shrink-0 w-64 h-80 bg-gray-200 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+            {timeDealProducts.map(product => (
+              <Link key={product.id} to={`/product/${product.id}`} className="flex-shrink-0 w-64 border border-[#E7EBEF] rounded-lg overflow-hidden bg-white group shadow-sm hover:shadow-md transition-shadow">
+                <div className="relative aspect-square overflow-hidden">
+                  <img src={product.thumbnail_url} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
+                  <div className="absolute top-2 left-2 bg-[#FF5C02] text-white px-2 py-1 text-[10px] rounded font-bold">
+                    핫딜
+                  </div>
                 </div>
-              </div>
-              <div className="p-4 space-y-1">
-                <h3 className="font-bold text-sm line-clamp-1 text-[#1C1C1C]">{product.name}</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-[#FF5C02] font-bold">RM {product.price.toFixed(2)}</span>
-                  <span className="text-xs text-[#8F90A6] line-through">RM {product.originalPrice.toFixed(2)}</span>
+                <div className="p-4 space-y-1">
+                  <h3 className="font-bold text-sm line-clamp-1 text-[#1C1C1C]">{product.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#FF5C02] font-bold">RM {product.price.toFixed(2)}</span>
+                    {product.original_price && (
+                      <span className="text-xs text-[#8F90A6] line-through">RM {product.original_price.toFixed(2)}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Regular Selection */}
       <section className="px-6 space-y-4">
         <h2 className="text-xl font-bold text-[#1C1C1C]">상시 판매</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {MOCK_PRODUCTS.filter(p => p.type === 'A').map(product => (
-            <Link key={product.id} to={`/product/${product.id}`} className="space-y-2 group">
-              <div className="aspect-square rounded-lg overflow-hidden border border-[#E7EBEF] bg-white shadow-sm group-hover:shadow-md transition-shadow">
-                <img src={product.image} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
-              </div>
-              <div className="space-y-0.5">
-                <h3 className="font-medium text-xs line-clamp-2 h-8 text-[#1C1C1C]">{product.name}</h3>
-                <p className="text-[#FF5C02] font-bold text-sm">RM {product.price.toFixed(2)}</p>
-                {product.isHalal && (
-                  <span className="inline-block bg-[#E3FFF1] text-[#06C270] text-[8px] px-2 py-0.5 rounded font-bold uppercase">할랄 인증</span>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="aspect-square bg-gray-200 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            {regularProducts.map(product => (
+              <Link key={product.id} to={`/product/${product.id}`} className="space-y-2 group">
+                <div className="aspect-square rounded-lg overflow-hidden border border-[#E7EBEF] bg-white shadow-sm group-hover:shadow-md transition-shadow">
+                  <img src={product.thumbnail_url} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
+                </div>
+                <div className="space-y-0.5">
+                  <h3 className="font-medium text-xs line-clamp-2 h-8 text-[#1C1C1C]">{product.name}</h3>
+                  <p className="text-[#FF5C02] font-bold text-sm">RM {product.price.toFixed(2)}</p>
+                  {product.is_halal && (
+                    <span className="inline-block bg-[#E3FFF1] text-[#06C270] text-[8px] px-2 py-0.5 rounded font-bold uppercase">할랄 인증</span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Content Tips */}

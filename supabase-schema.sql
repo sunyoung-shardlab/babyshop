@@ -154,3 +154,9 @@ CREATE TRIGGER update_orders_updated_at
     BEFORE UPDATE ON orders
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- 제품 관련 테이블 (Product Tables)
+-- ============================================
+-- 전체 스키마는 supabase-products-schema.sql 참고
+-- Supabase Dashboard에서 해당 파일 실행 필요

@@ -4,6 +4,7 @@ import { Home, ShoppingBag, User, Heart, ShoppingCart } from 'lucide-react';
 import { COLORS } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import OnboardingFlow from './OnboardingFlow';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -22,8 +23,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-[#FAFAFC] shadow-xl relative">
-      {/* Header */}
+    <>
+      <OnboardingFlow />
+      <div className="min-h-screen flex flex-col max-w-md mx-auto bg-[#FAFAFC] shadow-xl relative">
+        {/* Header */}
       <header className="p-4 border-b border-[#E7EBEF] flex justify-between items-center bg-white sticky top-0 z-50">
         <Link to="/" className="text-2xl font-bold text-[#FF5C02]">
           K-Baby Malaysia
@@ -62,7 +65,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <span className="text-[10px] mt-1 font-medium">마이페이지</span>
         </Link>
       </nav>
-    </div>
+      </div>
+    </>
   );
 };
 
