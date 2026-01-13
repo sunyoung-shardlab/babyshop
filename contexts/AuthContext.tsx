@@ -135,40 +135,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('🚪 [handleSignOut] Starting logout...');
     
     try {
-      // 1. Supabase 로그아웃 (타임아웃 5초 - 단축)
+      // 1. Supabase 로그아웃 (타임아웃 3초)
       if (supabase) {
-        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 5s)...');
+        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 3s)...');
         
         const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Logout timeout after 5s')), 5000);
+          setTimeout(() => reject(new Error('Logout timeout after 3s')), 3000);
         });
         
         try {
+          // scope: 'global' → 서버에서 refresh_token 삭제 (보안!)
           await Promise.race([
-            authSignOut(),
+            authSignOut(), // 내부적으로 scope: 'global' 사용
             timeoutPromise
           ]);
           
-          console.log('✅ [handleSignOut] Supabase signOut completed');
+          console.log('✅ [handleSignOut] Supabase signOut completed (refresh_token deleted from server)');
         } catch (signOutError: any) {
-          // 타임아웃 또는 403 session_not_found 에러
-          console.warn('⚠️ [handleSignOut] Supabase signOut failed:', signOutError?.message);
-          
-          // session_not_found 또는 타임아웃은 로컬 로그아웃 진행
-          if (
-            signOutError?.message?.includes('timeout') ||
-            signOutError?.message?.includes('session_not_found')
-          ) {
-            console.log('→ Invalid session detected. Forcing local logout...');
-            // 로컬 로그아웃 계속 진행
-          } else {
-            // 다른 에러는 실패 처리
+          // 타임아웃 발생
+          if (signOutError?.message?.includes('timeout')) {
+            console.error('❌ [handleSignOut] Timeout! Server might be slow or unavailable.');
+            
+            // Slack 알림 전송
+            sendErrorToMonitoring({
+              type: 'LOGOUT_TIMEOUT',
+              error: 'Supabase signOut timeout after 3s',
+              user: user?.email || 'unknown',
+              timestamp: new Date().toISOString(),
+            });
+            
+            // 실제 에러로 throw (로컬 로그아웃 하지 않음)
             throw signOutError;
           }
+          
+          // 403 session_not_found는 이미 authService.ts에서 처리됨 (정상 return)
+          // 따라서 여기에 도달하면 다른 심각한 에러
+          console.error('❌ [handleSignOut] Unexpected error:', signOutError);
+          throw signOutError;
         }
       }
       
       // 2. localStorage 정리
+      console.log('🔍 [handleSignOut] Clearing localStorage...');
       localStorage.clear();
       
       // 3. 홈으로 즉시 리다이렉트 (상태 업데이트 전에!)
@@ -182,7 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('❌ [handleSignOut] Logout failed:', error);
       
-      // 에러 로그 전송 (Slack 또는 Sentry)
+      // 에러 로그 전송 (Slack)
       sendErrorToMonitoring({
         type: 'LOGOUT_FAILED',
         error: error instanceof Error ? error.message : String(error),

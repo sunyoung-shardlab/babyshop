@@ -176,7 +176,7 @@ export const signInWithGoogle = async () => {
   return data;
 };
 
-// 로그아웃
+// 로그아웃 (보안을 위해 항상 scope: 'global' 사용)
 export const signOut = async () => {
   console.log('🔍 [signOut] Starting...');
   
@@ -185,23 +185,37 @@ export const signOut = async () => {
     throw new Error('Supabase not initialized');
   }
 
-  console.log('🔍 [signOut] Calling supabase.auth.signOut() with scope: local...');
+  console.log('🔍 [signOut] Calling supabase.auth.signOut() with scope: global (secure)...');
   const startTime = Date.now();
   
   try {
-    // scope: 'local' → 서버 검증 없이 로컬만 정리 (빠름!)
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    // scope: 'global' → 모든 기기에서 로그아웃 + 서버에서 refresh_token 삭제 (보안!)
+    const { error } = await supabase.auth.signOut({ scope: 'global' });
     const duration = Date.now() - startTime;
     
     if (error) {
       console.error('❌ [signOut] Error:', error);
+      
+      // 403 session_not_found는 이미 로그아웃된 상태이므로 무시
+      if (error.message?.includes('session_not_found') || error.status === 403) {
+        console.warn('⚠️ [signOut] Session already invalid (403). Proceeding with local cleanup...');
+        return; // 에러를 throw하지 않고 정상 처리
+      }
+      
       throw error;
     }
     
     console.log(`✅ [signOut] Success! (${duration}ms)`);
-  } catch (error) {
+  } catch (error: any) {
     const duration = Date.now() - startTime;
     console.error(`❌ [signOut] Failed after ${duration}ms:`, error);
+    
+    // 403 session_not_found는 이미 로그아웃된 상태
+    if (error.message?.includes('session_not_found') || error.status === 403) {
+      console.warn('⚠️ [signOut] Session already invalid (403). Proceeding with local cleanup...');
+      return; // 에러를 throw하지 않고 정상 처리
+    }
+    
     throw error;
   }
 };
