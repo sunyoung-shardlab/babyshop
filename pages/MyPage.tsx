@@ -8,10 +8,10 @@ const MyPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn, loading, signOut } = useAuth();
 
-  // 비로그인 시 홈으로 리다이렉트
+  // 비로그인 시 로그인 페이지로 리다이렉트
   useEffect(() => {
     if (!loading && !isLoggedIn) {
-      navigate('/');
+      navigate('/login');
     }
   }, [loading, isLoggedIn, navigate]);
 
