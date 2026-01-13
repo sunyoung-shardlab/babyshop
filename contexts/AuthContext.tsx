@@ -3,6 +3,43 @@ import { User as AuthUser } from '@supabase/supabase-js';
 import { supabase, getSafeSession, signOut as authSignOut } from '../services/authService';
 import { User } from '../types';
 
+// 에러 모니터링 (Slack Webhook 또는 Sentry)
+const sendErrorToMonitoring = async (errorData: {
+  type: string;
+  error: string;
+  user: string;
+  timestamp: string;
+}) => {
+  // Slack Webhook URL (환경변수에서 가져오기)
+  const slackWebhookUrl = import.meta.env.VITE_SLACK_WEBHOOK_URL;
+  
+  if (slackWebhookUrl) {
+    try {
+      await fetch(slackWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `🚨 *${errorData.type}*`,
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*🚨 에러 발생*\n*타입:* ${errorData.type}\n*유저:* ${errorData.user}\n*에러:* ${errorData.error}\n*시간:* ${errorData.timestamp}`
+              }
+            }
+          ]
+        })
+      });
+    } catch (err) {
+      console.error('Failed to send error to Slack:', err);
+    }
+  }
+  
+  // 콘솔에도 출력 (개발 환경)
+  console.error('📊 [Error Monitoring]:', errorData);
+};
+
 interface AuthContextType {
   user: User | null;
   authUser: AuthUser | null;
@@ -130,18 +167,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthUser(null);
       
     } catch (error) {
-      console.error('⚠️ [handleSignOut] Error during logout:', error);
+      console.error('❌ [handleSignOut] Logout failed:', error);
       
-      // localStorage 정리
-      localStorage.clear();
+      // 에러 로그 전송 (Slack 또는 Sentry)
+      sendErrorToMonitoring({
+        type: 'LOGOUT_FAILED',
+        error: error instanceof Error ? error.message : String(error),
+        user: user?.email || 'unknown',
+        timestamp: new Date().toISOString(),
+      });
       
-      // 홈으로 즉시 리다이렉트
-      console.log('⚠️ [handleSignOut] Force logout and redirecting to home...');
-      window.location.replace('/#/');
+      // 사용자에게 알림
+      alert('로그아웃 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.');
       
-      // 로컬 상태 초기화 (리다이렉트 후에는 실행 안 됨)
-      setUser(null);
-      setAuthUser(null);
+      // ⚠️ 화면 유지 (리다이렉트 하지 않음!)
+      // ⚠️ 로컬 로그아웃도 하지 않음! (서버 로그아웃 실패했으므로)
     }
   };
 
