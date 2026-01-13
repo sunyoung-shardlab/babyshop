@@ -84,6 +84,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (mounted) {
           if (session?.user) {
+            // 🔍 추가: 서버에서 세션 유효성 검증 (낡은 세션 자동 정리)
+            try {
+              console.log('🔍 Validating session on server...');
+              const { data, error: userError } = await supabase.auth.getUser();
+              
+              if (userError || !data.user) {
+                console.warn('⚠️ Session mismatch detected! localStorage has stale session.');
+                console.warn('→ Clearing localStorage and starting fresh...');
+                localStorage.clear();
+                setAuthUser(null);
+                setUser(null);
+                setLoading(false);
+                return;
+              }
+              
+              console.log('✅ Session validated on server');
+            } catch (validationError) {
+              console.warn('⚠️ Session validation failed (network issue?), keeping local session:', validationError);
+              // 네트워크 오류는 무시하고 로컬 세션 유지
+            }
+            
             setAuthUser(session.user);
             setUser(convertAuthUserToUser(session.user));
             console.log('✅ Auth ready:', session.user.email);
