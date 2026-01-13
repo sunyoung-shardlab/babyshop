@@ -135,12 +135,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('🚪 [handleSignOut] Starting logout...');
     
     try {
-      // 1. Supabase 로그아웃 (타임아웃 0.01초 - 테스트용)
+      // 1. Supabase 로그아웃 (타임아웃 10초)
       if (supabase) {
-        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 0.01s - TEST MODE)...');
+        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 10s)...');
         
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Logout timeout after 0.01s')), 10);  // 100 → 10 (강제 타임아웃!)
+          setTimeout(() => reject(new Error('Logout timeout after 10s')), 10000);
         });
         
       // 🧪 테스트: 강제로 에러 발생 (나중에 삭제!)

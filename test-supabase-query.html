@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <button onclick="testQuery()">Test Query</button>
+    <pre id="result"></pre>
+    
+    <script>
+        const supabaseUrl = 'https://cnumxvxxyxexzzyeinjr.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNudW14dnh4eXhleHp6eWVpbmpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4MzU0MzcsImV4cCI6MjA4MzQxMTQzN30.s5Rv_-7wERhH_r3_0AUiR2c3ZKDRfZF6HmyxovrmPnY';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        
+        async function testQuery() {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Loading...';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('status', 'active')
+                    .is('deleted_at', null);
+                
+                if (error) {
+                    resultEl.textContent = 'ERROR: ' + JSON.stringify(error, null, 2);
+                } else {
+                    resultEl.textContent = 'SUCCESS: ' + JSON.stringify(data, null, 2);
+                }
+            } catch (err) {
+                resultEl.textContent = 'EXCEPTION: ' + err.message;
+            }
+        }
+        
+        // Auto-run on load
+        window.addEventListener('load', testQuery);
+    </script>
+</body>
+</html>

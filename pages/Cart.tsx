@@ -9,10 +9,10 @@ const Cart: React.FC = () => {
   const { isLoggedIn, loading } = useAuth();
   const { cart, removeFromCart, updateQuantity, getTotalPrice, getTotalItems } = useCart();
 
-  // 비로그인 시 홈으로 리다이렉트
+  // 비로그인 시 로그인 페이지로 리다이렉트
   useEffect(() => {
     if (!loading && !isLoggedIn) {
-      navigate('/');
+      navigate('/login');
     }
   }, [loading, isLoggedIn, navigate]);
 
