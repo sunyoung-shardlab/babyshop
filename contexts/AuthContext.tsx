@@ -126,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.clear();
       
       // 4. 홈으로 리다이렉트
-      console.log('✅ [handleSignOut] Redirecting to home...');
+      console.log('✅ [handleSignOut] Logout complete! Redirecting to home...');
       window.location.href = '/#/';
       
       // 5. 새로고침
@@ -142,7 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthUser(null);
       localStorage.clear();
       
-      console.log('⚠️ [handleSignOut] Force logout and redirect...');
+      console.log('⚠️ [handleSignOut] Force logout and redirecting...');
       window.location.href = '/#/';
       setTimeout(() => {
         window.location.reload();
