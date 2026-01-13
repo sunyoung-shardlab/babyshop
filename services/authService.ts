@@ -4,6 +4,12 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// 환경 변수 로깅 (디버깅용)
+console.log('🔑 Environment Variables:');
+console.log('  VITE_SUPABASE_URL:', supabaseUrl);
+console.log('  VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'undefined');
+console.log('  All env keys:', Object.keys(import.meta.env));
+
 // Supabase 클라이언트 초기화 상태
 let supabaseClient: SupabaseClient | null = null;
 let initializationError: Error | null = null;
@@ -27,21 +33,8 @@ function initializeSupabase(): SupabaseClient | null {
   }
 
   try {
-    // Supabase 클라이언트 생성
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        // 네트워크 timeout 설정
-        flowType: 'pkce',
-      },
-      global: {
-        headers: {
-          'X-Client-Info': 'babyshop-web',
-        },
-      },
-    });
+    // Supabase 클라이언트 생성 (최소 설정으로 변경)
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
     isInitialized = true;
     console.log('✅ Supabase initialized successfully');
@@ -119,7 +112,7 @@ export const getSafeSession = async () => {
   try {
     const result = await withTimeout(
       withRetry(() => supabase.auth.getSession(), 2),
-      5000,
+      15000,  // 5초 → 15초로 증가
       'getSession'
     );
     return result;

@@ -1,6 +1,45 @@
 import { supabase } from './authService';
 import { Product, ProductImage, ProductCategory } from '../types';
 
+// Supabase REST API 직접 호출을 위한 설정
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+/**
+ * Supabase REST API 직접 호출 (SDK 문제 우회)
+ */
+async function supabaseFetch(endpoint: string, options: RequestInit = {}) {
+  const url = `${SUPABASE_URL}/rest/v1${endpoint}`;
+  
+  const headers = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation',
+    ...options.headers,
+  };
+
+  console.log('🔍 Fetch API:', url);
+  
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  console.log('🔍 Response status:', response.status);
+  
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('❌ API error:', error);
+    throw new Error(error);
+  }
+
+  const data = await response.json();
+  console.log('✅ Data received:', data?.length || 0, 'items');
+  
+  return data;
+}
+
 /**
  * 제품을 DB 형식에서 앱 형식으로 변환
  */
@@ -75,19 +114,17 @@ function transformProduct(dbProduct: any): Product {
  */
 export async function getAllProducts(): Promise<Product[]> {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('status', 'active')
-      .is('deleted_at', null)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
+    console.log('🔍 getAllProducts: Using Fetch API...');
     
+    // Fetch API로 직접 호출
+    const endpoint = `/products?status=eq.active&deleted_at=is.null&order=sort_order.asc,created_at.desc`;
+    
+    const data = await supabaseFetch(endpoint);
+    
+    console.log('✅ All products fetched:', data?.length || 0);
     return (data || []).map(transformProduct);
   } catch (error) {
-    console.error('제품 조회 실패:', error);
+    console.error('❌ 제품 조회 실패:', error);
     return [];
   }
 }
@@ -97,20 +134,19 @@ export async function getAllProducts(): Promise<Product[]> {
  */
 export async function getProductById(id: string): Promise<Product | null> {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', id)
-      .eq('status', 'active')
-      .is('deleted_at', null)
-      .single();
-
-    if (error) throw error;
-    if (!data) return null;
+    console.log('🔍 getProductById: Using Fetch API...');
     
-    return transformProduct(data);
+    // Fetch API로 직접 호출
+    const endpoint = `/products?id=eq.${id}&status=eq.active&deleted_at=is.null&limit=1`;
+    
+    const data = await supabaseFetch(endpoint);
+    
+    if (!data || data.length === 0) return null;
+    
+    console.log('✅ Product fetched');
+    return transformProduct(data[0]);
   } catch (error) {
-    console.error('제품 조회 실패:', error);
+    console.error('❌ 제품 조회 실패:', error);
     return null;
   }
 }
@@ -182,20 +218,18 @@ export async function getProductsByCategory(category: string): Promise<Product[]
  */
 export async function getTimeDealProducts(): Promise<Product[]> {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('status', 'active')
-      .not('sale_end_date', 'is', null)
-      .gte('sale_end_date', new Date().toISOString())
-      .is('deleted_at', null)
-      .order('sale_end_date', { ascending: true });
-
-    if (error) throw error;
+    console.log('🔍 getTimeDealProducts: Using Fetch API...');
     
+    // Fetch API로 직접 호출
+    const currentDate = new Date().toISOString();
+    const endpoint = `/products?status=eq.active&deleted_at=is.null&sale_end_date=not.is.null&sale_end_date=gte.${currentDate}&order=sale_end_date.asc`;
+    
+    const data = await supabaseFetch(endpoint);
+    
+    console.log('✅ Time deal products fetched:', data?.length || 0);
     return (data || []).map(transformProduct);
   } catch (error) {
-    console.error('타임딜 제품 조회 실패:', error);
+    console.error('❌ 타임딜 제품 조회 실패:', error);
     return [];
   }
 }
@@ -205,20 +239,17 @@ export async function getTimeDealProducts(): Promise<Product[]> {
  */
 export async function getRegularProducts(): Promise<Product[]> {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('status', 'active')
-      .is('sale_end_date', null)
-      .is('deleted_at', null)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
+    console.log('🔍 getRegularProducts: Using Fetch API...');
     
+    // Fetch API로 직접 호출
+    const endpoint = `/products?status=eq.active&deleted_at=is.null&sale_end_date=is.null&order=sort_order.asc,created_at.desc`;
+    
+    const data = await supabaseFetch(endpoint);
+    
+    console.log('✅ Regular products fetched:', data?.length || 0);
     return (data || []).map(transformProduct);
   } catch (error) {
-    console.error('일반 제품 조회 실패:', error);
+    console.error('❌ 일반 제품 조회 실패:', error);
     return [];
   }
 }
