@@ -3,7 +3,7 @@ import { User as AuthUser } from '@supabase/supabase-js';
 import { supabase, getSafeSession, signOut as authSignOut } from '../services/authService';
 import { User } from '../types';
 
-// 에러 모니터링 (Slack Webhook 또는 Sentry)
+// 에러 모니터링 (Vercel Serverless Function → Slack)
 const sendErrorToMonitoring = async (errorData: {
   type: string;
   error: string;
@@ -12,37 +12,27 @@ const sendErrorToMonitoring = async (errorData: {
 }) => {
   // 환경 구분
   const environment = import.meta.env.MODE; // 'development' 또는 'production'
-  const isProd = import.meta.env.PROD; // true 또는 false
-  const envEmoji = isProd ? '🚀' : '🔧';
+  const isProd = import.meta.env.PROD;
   const envLabel = isProd ? 'PRODUCTION' : 'DEVELOPMENT';
   
-  // Slack Webhook URL (환경변수에서 가져오기)
-  const slackWebhookUrl = import.meta.env.VITE_SLACK_WEBHOOK_URL;
-  
-  if (slackWebhookUrl) {
-    try {
-      await fetch(slackWebhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: `${envEmoji} *${envLabel}* - 🚨 *${errorData.type}*`,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `*🚨 에러 발생*\n*환경:* ${envEmoji} *${envLabel}* (${environment})\n*타입:* ${errorData.type}\n*유저:* ${errorData.user}\n*에러:* ${errorData.error}\n*시간:* ${errorData.timestamp}\n*URL:* ${window.location.href}`
-              }
-            }
-          ]
-        })
-      });
-    } catch (err) {
-      console.error('Failed to send error to Slack:', err);
-    }
+  try {
+    // Vercel Serverless Function 호출 (CORS 문제 해결)
+    await fetch('/api/send-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...errorData,
+        environment,
+        url: window.location.href,
+      })
+    });
+    
+    console.log(`✅ Error sent to monitoring (${envLabel})`);
+  } catch (err) {
+    console.error('❌ Failed to send error to monitoring:', err);
   }
   
-  // 콘솔에도 출력 (개발 환경)
+  // 콘솔에도 출력
   console.error(`📊 [Error Monitoring - ${envLabel}]:`, errorData);
 };
 
@@ -145,12 +135,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('🚪 [handleSignOut] Starting logout...');
     
     try {
-      // 1. Supabase 로그아웃 (타임아웃 0.4초 - 테스트용)
+      // 1. Supabase 로그아웃 (타임아웃 0.01초 - 테스트용)
       if (supabase) {
-        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 0.4s - TEST MODE)...');
+        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 0.01s - TEST MODE)...');
         
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Logout timeout after 0.4s')), 400);  // 10000 → 400 (테스트)
+          setTimeout(() => reject(new Error('Logout timeout after 0.01s')), 10);  // 100 → 10 (강제 타임아웃!)
         });
         
       // 🧪 테스트: 강제로 에러 발생 (나중에 삭제!)
