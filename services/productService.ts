@@ -41,32 +41,6 @@ async function supabaseFetch(endpoint: string, options: RequestInit = {}) {
 }
 
 /**
- * 상품 이미지 목록 조회 (순서대로)
- */
-export async function getProductImages(productId: string): Promise<string[]> {
-  try {
-    console.log('🔍 [getProductImages] Loading images for product:', productId);
-    
-    const images = await supabaseFetch(
-      `/product_images?product_id=eq.${productId}&order=sort_order.asc`
-    );
-    
-    if (!images || images.length === 0) {
-      console.warn('⚠️ [getProductImages] No images found, returning empty array');
-      return [];
-    }
-    
-    const imageUrls = images.map((img: any) => img.image_url);
-    console.log('✅ [getProductImages] Loaded', imageUrls.length, 'images');
-    
-    return imageUrls;
-  } catch (error) {
-    console.error('❌ [getProductImages] Error:', error);
-    return [];
-  }
-}
-
-/**
  * 제품을 DB 형식에서 앱 형식으로 변환
  */
 function transformProduct(dbProduct: any): Product {
@@ -178,21 +152,29 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 /**
- * 제품 상세 이미지 조회
+ * 제품 상세 이미지 조회 (URL 배열로 반환)
  */
-export async function getProductImages(productId: string): Promise<ProductImage[]> {
+export async function getProductImages(productId: string): Promise<string[]> {
   try {
-    const { data, error } = await supabase
-      .from('product_images')
-      .select('*')
-      .eq('product_id', productId)
-      .order('sort_order', { ascending: true });
-
-    if (error) throw error;
+    console.log('🔍 [getProductImages] Loading images for product:', productId);
     
-    return data || [];
+    // Fetch API로 직접 호출
+    const images = await supabaseFetch(
+      `/product_images?product_id=eq.${productId}&order=sort_order.asc`
+    );
+    
+    if (!images || images.length === 0) {
+      console.warn('⚠️ [getProductImages] No images found, returning empty array');
+      return [];
+    }
+    
+    // 이미지 URL만 추출하여 반환
+    const imageUrls = images.map((img: any) => img.image_url);
+    console.log('✅ [getProductImages] Loaded', imageUrls.length, 'images');
+    
+    return imageUrls;
   } catch (error) {
-    console.error('제품 이미지 조회 실패:', error);
+    console.error('❌ [getProductImages] Error:', error);
     return [];
   }
 }
