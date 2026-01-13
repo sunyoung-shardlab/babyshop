@@ -99,34 +99,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handleSignOut = async () => {
-    try {
-      console.log('🚪 Starting logout...');
-      
-      // 1. Supabase 로그아웃
-      await authSignOut();
-      
-      // 2. 로컬 상태 즉시 초기화
-      setUser(null);
-      setAuthUser(null);
-      
-      // 3. localStorage 완전 정리
-      localStorage.clear();
-      
-      // 4. 홈으로 이동 후 강제 새로고침
-      window.location.href = '/#/';
-      window.location.reload();
-      
-      console.log('✅ Logout completed');
-    } catch (error) {
-      console.error('❌ Logout error:', error);
-      
-      // 에러가 발생해도 강제로 로그아웃 처리
-      setUser(null);
-      setAuthUser(null);
-      localStorage.clear();
-      window.location.href = '/#/';
-      window.location.reload();
+    console.log('🚪 Starting logout...');
+    
+    // 1. 로컬 상태 즉시 초기화 (먼저 처리)
+    setUser(null);
+    setAuthUser(null);
+    
+    // 2. localStorage 완전 정리
+    localStorage.clear();
+    
+    // 3. Supabase 로그아웃 시도 (백그라운드, 실패해도 무시)
+    if (supabase) {
+      authSignOut().catch((error) => {
+        console.warn('⚠️ Supabase signout failed (ignored):', error);
+      });
     }
+    
+    // 4. 즉시 홈으로 리다이렉트 (Supabase 응답 기다리지 않음)
+    console.log('✅ Logout completed, redirecting...');
+    window.location.href = '/#/';
+    
+    // 5. 약간의 딜레이 후 새로고침 (리다이렉트 완료 대기)
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   return (
