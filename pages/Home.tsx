@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MOCK_TIPS, COLORS } from '../constants';
-import { ArrowRight, Star, Clock } from 'lucide-react';
+import { ArrowRight, Star, Clock, Tag } from 'lucide-react';
 import { Product } from '../types';
 import { getTimeDealProducts, getRegularProducts } from '../services/productService';
 import OnboardingFlow from '../components/OnboardingFlow';
+import { CountdownTimer } from '../components/CountdownTimer';
 
 const Home: React.FC = () => {
   const [timeDealProducts, setTimeDealProducts] = useState<Product[]>([]);
@@ -70,25 +71,47 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-            {timeDealProducts.map(product => (
-              <Link key={product.id} to={`/product/${product.id}`} className="flex-shrink-0 w-64 border border-[#E7EBEF] rounded-lg overflow-hidden bg-white group shadow-sm hover:shadow-md transition-shadow">
-                <div className="relative aspect-square overflow-hidden">
-                  <img src={product.thumbnail_url} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
-                  <div className="absolute top-2 left-2 bg-[#FF5C02] text-white px-2 py-1 text-[10px] rounded font-bold">
-                    핫딜
-                  </div>
-                </div>
-                <div className="p-4 space-y-1">
-                  <h3 className="font-bold text-sm line-clamp-1 text-[#1C1C1C]">{product.name}</h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#FF5C02] font-bold">RM {product.price.toFixed(2)}</span>
-                    {product.original_price && (
-                      <span className="text-xs text-[#8F90A6] line-through">RM {product.original_price.toFixed(2)}</span>
+            {timeDealProducts.map(product => {
+              const discountRate = product.original_price && product.price
+                ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
+                : 0;
+              
+              return (
+                <Link key={product.id} to={`/product/${product.id}`} className="flex-shrink-0 w-64 border border-[#E7EBEF] rounded-lg overflow-hidden bg-white group shadow-sm hover:shadow-md transition-shadow">
+                  <div className="relative aspect-square overflow-hidden">
+                    <img src={product.thumbnail_url} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
+                    {discountRate > 0 && (
+                      <div className="absolute top-2 left-2 bg-[#FF5C02] text-white px-3 py-1 text-xs rounded-full font-bold shadow-md">
+                        {discountRate}% 할인
+                      </div>
+                    )}
+                    {product.category && (
+                      <div className="absolute top-2 right-2 bg-white/90 text-[#555770] px-2 py-0.5 text-[10px] rounded font-medium">
+                        #{product.category}
+                      </div>
                     )}
                   </div>
-                </div>
-              </Link>
-            ))}
+                  <div className="p-4 space-y-2">
+                    <h3 className="font-bold text-sm line-clamp-1 text-[#1C1C1C]">{product.name}</h3>
+                    
+                    {/* 가격 정보 */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#FF5C02] font-bold text-lg">RM {product.price.toFixed(2)}</span>
+                        {product.original_price && (
+                          <span className="text-xs text-[#8F90A6] line-through">RM {product.original_price.toFixed(2)}</span>
+                        )}
+                      </div>
+                      
+                      {/* 종료 기한 */}
+                      {product.sale_end_date && (
+                        <CountdownTimer endDate={product.sale_end_date} />
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>

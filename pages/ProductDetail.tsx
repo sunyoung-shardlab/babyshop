@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { COLORS } from '../constants';
-import { ChevronLeft, Share2, Info, AlertTriangle, ShoppingCart, Clock } from 'lucide-react';
+import { ChevronLeft, Share2, Info, AlertTriangle, ShoppingCart, Clock, Package, Truck, Tag } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Product } from '../types';
-import { getProductById, incrementProductView } from '../services/productService';
+import { getProductById, incrementProductView, getProductImages } from '../services/productService';
+import { CountdownTimer } from '../components/CountdownTimer';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +15,9 @@ const ProductDetail: React.FC = () => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
   const [productLoading, setProductLoading] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   useEffect(() => {
     const loadProduct = async () => {
@@ -24,6 +27,11 @@ const ProductDetail: React.FC = () => {
         setProductLoading(true);
         const productData = await getProductById(id);
         setProduct(productData);
+        
+        // 상세 이미지 로드 (썸네일 포함)
+        const images: string[] = [productData.thumbnail_url];
+        // 추가 이미지가 있으면 로드 (향후 구현)
+        setProductImages(images);
         
         // 조회수 증가 (비동기로 실행, 에러 무시)
         if (productData) {
@@ -77,9 +85,29 @@ const ProductDetail: React.FC = () => {
         </button>
       </div>
 
-      {/* Image */}
-      <div className="aspect-square bg-[#F2F2F5] overflow-hidden">
-        <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover" />
+      {/* Image Gallery */}
+      <div className="aspect-square bg-[#F2F2F5] overflow-hidden relative">
+        <img src={productImages[currentImageIndex] || product.thumbnail_url} alt={product.name} className="w-full h-full object-cover" />
+        
+        {/* 할인 배지 */}
+        {product.original_price && product.price && (
+          <div className="absolute top-4 left-4 bg-[#FF5C02] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+            {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% 할인
+          </div>
+        )}
+        
+        {/* 이미지 인디케이터 */}
+        {productImages.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+            {productImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-2 h-2 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Info Container */}
@@ -100,18 +128,36 @@ const ProductDetail: React.FC = () => {
 
         <div className={isGuest ? 'blurred-guest' : 'space-y-6'}>
           {/* Header */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-start">
+          <div className="space-y-3">
+            <div className="flex justify-between items-start gap-3">
               <h1 className="text-2xl font-bold leading-tight text-[#1C1C1C]">{product.name}</h1>
               {product.is_halal && (
                 <span className="flex-shrink-0 bg-[#E3FFF1] text-[#06C270] text-[10px] px-2 py-1 rounded-full font-bold">HALAL</span>
               )}
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-[#FF5C02]">RM {product.price.toFixed(2)}</span>
-              {product.original_price && (
-                <span className="text-sm text-[#8F90A6] line-through">RM {product.original_price.toFixed(2)}</span>
-              )}
+            
+            {/* 제품 태그 */}
+            {product.category && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 bg-[#F2F2F5] text-[#555770] px-3 py-1 rounded-full text-xs font-medium">
+                  <Tag size={12} /> {product.category}
+                </span>
+              </div>
+            )}
+            
+            {/* 가격 */}
+            <div className="space-y-1">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-[#FF5C02]">RM {product.price.toFixed(2)}</span>
+                {product.original_price && (
+                  <>
+                    <span className="text-lg text-[#8F90A6] line-through">RM {product.original_price.toFixed(2)}</span>
+                    <span className="text-sm text-[#FF5C02] font-bold">
+                      ({Math.round(((product.original_price - product.price) / product.original_price) * 100)}% 절약)
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -124,31 +170,39 @@ const ProductDetail: React.FC = () => {
             )}
             {product.sale_end_date && (
               <div className="flex items-center gap-2 text-[#FF5C02] text-sm font-bold bg-[#FFE5E5] p-3 rounded-lg border border-[#FFC9AB]">
-                <Clock size={16} /> 특가 종료까지: 02일 14시간 22분
+                <Clock size={16} /> 
+                <CountdownTimer endDate={product.sale_end_date} />
               </div>
             )}
           </div>
 
           {/* Quantity Selector */}
-          <div className="flex items-center justify-between py-4 border-y border-[#E7EBEF]">
-            <span className="font-bold text-[#1C1C1C]">수량</span>
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 border border-[#E7EBEF] rounded-lg flex items-center justify-center font-bold hover:bg-[#F2F2F5] transition-colors"
-              >
-                -
-              </button>
-              <span className="font-bold text-lg text-[#1C1C1C]">{quantity}</span>
-              <button 
-                onClick={() => setQuantity(Math.min(product.max_order_quantity, quantity + 1))}
-                className="w-10 h-10 border border-[#E7EBEF] rounded-lg flex items-center justify-center font-bold hover:bg-[#F2F2F5] transition-colors"
-              >
-                +
-              </button>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between py-4 border-y border-[#E7EBEF]">
+              <span className="font-bold text-[#1C1C1C]">수량</span>
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-10 h-10 border border-[#E7EBEF] rounded-lg flex items-center justify-center font-bold hover:bg-[#F2F2F5] transition-colors"
+                >
+                  -
+                </button>
+                <span className="font-bold text-lg text-[#1C1C1C]">{quantity}</span>
+                <button 
+                  onClick={() => setQuantity(Math.min(product.max_order_quantity || 99, quantity + 1))}
+                  className="w-10 h-10 border border-[#E7EBEF] rounded-lg flex items-center justify-center font-bold hover:bg-[#F2F2F5] transition-colors"
+                >
+                  +
+                </button>
+              </div>
             </div>
+            {product.max_order_quantity && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#8F90A6]">1인당 최대 구매 개수</span>
+                <span className="text-[#FF5C02] font-bold">{product.max_order_quantity}개</span>
+              </div>
+            )}
           </div>
-          <p className="text-[10px] text-[#8F90A6] text-right">1인당 최대 {product.max_order_quantity}개</p>
 
           {/* Description */}
           <div className="space-y-3">
@@ -161,14 +215,38 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Delivery Info */}
-          <div className="bg-white p-4 rounded-lg border border-[#E7EBEF] space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-[#8F90A6]">배송지</span>
-              <span className="font-bold text-[#1C1C1C]">쿠알라룸푸르 창고</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#8F90A6]">배송 예상</span>
-              <span className="font-bold text-[#1C1C1C]">4-5 영업일</span>
+          <div className="bg-white p-4 rounded-lg border border-[#E7EBEF] space-y-3">
+            <h4 className="font-bold text-sm flex items-center gap-2 text-[#1C1C1C]">
+              <Truck size={16} /> 배송 정보
+            </h4>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#8F90A6]">배송 출발일</span>
+                <span className="font-bold text-[#1C1C1C]">
+                  {product.shipping_departure_date 
+                    ? new Date(product.shipping_departure_date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+                    : '주문 후 1일 이내'
+                  }
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#8F90A6]">배송 예상 소요 시간</span>
+                <span className="font-bold text-[#1C1C1C]">
+                  {product.estimated_delivery_days ? `${product.estimated_delivery_days}일` : '3-5 영업일'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#8F90A6]">배송비</span>
+                <span className="font-bold text-[#FF5C02]">
+                  {product.is_free_shipping ? '무료 배송' : `RM ${(product.shipping_fee || 5).toFixed(2)}`}
+                </span>
+              </div>
+              {product.origin_country && (
+                <div className="flex justify-between">
+                  <span className="text-[#8F90A6]">원산지</span>
+                  <span className="font-bold text-[#1C1C1C]">{product.origin_country}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
