@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User as AuthUser } from '@supabase/supabase-js';
-import { supabase, signOut as authSignOut } from '../services/authService';
+import { supabase, getSafeSession, signOut as authSignOut } from '../services/authService';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -37,25 +37,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    // 초기 세션 확인
+    // Supabase가 설정되지 않은 경우
+    if (!supabase) {
+      console.warn('⚠️ Supabase not configured, skipping auth');
+      setLoading(false);
+      return;
+    }
+
+    // 초기 세션 확인 (timeout + retry 내장)
     const initAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('🔍 Initial session check:', { session, error }); // 디버깅용
+        const { data: { session }, error } = await getSafeSession();
         
         if (mounted) {
           if (session?.user) {
-            console.log('✅ User logged in:', session.user.email);
             setAuthUser(session.user);
             setUser(convertAuthUserToUser(session.user));
-          } else {
-            console.log('❌ No session found');
+            console.log('✅ Auth ready:', session.user.email);
           }
           setLoading(false);
         }
       } catch (error) {
-        console.error('❌ Auth init error:', error);
-        if (mounted) setLoading(false);
+        // 치명적 에러만 로그
+        console.error('❌ Auth initialization failed:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 

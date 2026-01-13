@@ -25,6 +25,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initUser = async () => {
       try {
+        // Supabase가 설정되지 않은 경우 로컬 스토리지 사용
+        if (!supabase) {
+          console.warn('⚠️ Supabase not configured, using localStorage only');
+          loadCartFromLocalStorage();
+          setLoading(false);
+          return;
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         const userId = session?.user?.id || null;
         setCurrentUserId(userId);
@@ -43,6 +51,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initUser();
+
+    // Supabase가 없으면 subscription 설정 안 함
+    if (!supabase) return;
 
     // Auth 상태 변화 감지
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {

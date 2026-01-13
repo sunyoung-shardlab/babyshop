@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -10,11 +10,13 @@ import ProfileSetup from './pages/ProfileSetup';
 import ReviewEditor from './pages/ReviewEditor';
 import MyPage from './pages/MyPage';
 import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFail from './pages/PaymentFail';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+
+// Lazy load Checkout (Toss Payments SDK 필요)
+const Checkout = lazy(() => import('./pages/Checkout'));
 
 const AppContent: React.FC = () => {
   const { loading } = useAuth();
@@ -43,7 +45,11 @@ const AppContent: React.FC = () => {
           <Route path="/review/:id" element={<ReviewEditor />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout" element={
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF5C02]"></div></div>}>
+              <Checkout />
+            </Suspense>
+          } />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/fail" element={<PaymentFail />} />
           <Route path="/likes" element={<div className="p-10 text-center text-[#8F90A6] bg-[#FAFAFC] min-h-screen">찜한 상품이 없습니다.</div>} />
