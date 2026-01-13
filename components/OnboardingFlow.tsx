@@ -1,31 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import BottomSheet from './BottomSheet';
 import OnboardingCarousel from './OnboardingCarousel';
-
-const ONBOARDING_KEY = 'babyshop_onboarding_completed';
+import { useAuth } from '../contexts/AuthContext';
 
 const OnboardingFlow: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { isLoggedIn, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    // 최초 진입 체크
-    const hasCompletedOnboarding = localStorage.getItem(ONBOARDING_KEY);
-    
-    if (!hasCompletedOnboarding) {
+    // 비로그인 상태일 때만 매번 표시
+    if (!authLoading && !isLoggedIn) {
       // 약간의 딜레이 후 표시 (부드러운 UX)
       setTimeout(() => {
         setShowOnboarding(true);
       }, 500);
     }
-  }, []);
+  }, [isLoggedIn, authLoading]);
 
   const handleComplete = () => {
-    localStorage.setItem(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
   };
 
   const handleClose = () => {
-    localStorage.setItem(ONBOARDING_KEY, 'true');
     setShowOnboarding(false);
   };
 

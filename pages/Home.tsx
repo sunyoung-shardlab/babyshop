@@ -5,6 +5,7 @@ import { MOCK_TIPS, COLORS } from '../constants';
 import { ArrowRight, Star, Clock } from 'lucide-react';
 import { Product } from '../types';
 import { getTimeDealProducts, getRegularProducts } from '../services/productService';
+import OnboardingFlow from '../components/OnboardingFlow';
 
 const Home: React.FC = () => {
   const [timeDealProducts, setTimeDealProducts] = useState<Product[]>([]);
@@ -32,7 +33,9 @@ const Home: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-8 animate-fadeIn bg-[#FAFAFC] min-h-screen">
+    <>
+      <OnboardingFlow />
+      <div className="space-y-8 animate-fadeIn bg-[#FAFAFC] min-h-screen">
       {/* Hero Section */}
       <section className="p-6 bg-white space-y-4 rounded-b-3xl shadow-sm">
         <div className="space-y-2">
@@ -146,6 +149,7 @@ const Home: React.FC = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

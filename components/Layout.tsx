@@ -4,7 +4,6 @@ import { Home, ShoppingBag, User, Heart, ShoppingCart } from 'lucide-react';
 import { COLORS } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import OnboardingFlow from './OnboardingFlow';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -24,7 +23,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <>
-      <OnboardingFlow />
       <div className="min-h-screen flex flex-col max-w-md mx-auto bg-[#FAFAFC] shadow-xl relative">
         {/* Header */}
       <header className="p-4 border-b border-[#E7EBEF] flex justify-between items-center bg-white sticky top-0 z-50">
