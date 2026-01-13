@@ -12,7 +12,6 @@ import MyPage from './pages/MyPage';
 import Cart from './pages/Cart';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFail from './pages/PaymentFail';
-import Debug from './pages/Debug';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 
@@ -53,7 +52,6 @@ const AppContent: React.FC = () => {
           } />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/fail" element={<PaymentFail />} />
-          <Route path="/debug" element={<Debug />} />
           <Route path="/likes" element={<div className="p-10 text-center text-[#8F90A6] bg-[#FAFAFC] min-h-screen">찜한 상품이 없습니다.</div>} />
           <Route path="/welcome-coupon" element={
             <div className="p-10 flex flex-col items-center text-center space-y-6 bg-[#FAFAFC] min-h-screen">
