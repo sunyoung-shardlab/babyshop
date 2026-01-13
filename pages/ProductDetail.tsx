@@ -18,6 +18,8 @@ const ProductDetail: React.FC = () => {
   const [productImages, setProductImages] = useState<string[]>([]);
   const [productLoading, setProductLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   
   useEffect(() => {
     const loadProduct = async () => {
@@ -28,10 +30,17 @@ const ProductDetail: React.FC = () => {
         const productData = await getProductById(id);
         setProduct(productData);
         
-        // 상세 이미지 로드 (썸네일 포함)
-        const images: string[] = [productData.thumbnail_url];
-        // 추가 이미지가 있으면 로드 (향후 구현)
-        setProductImages(images);
+        // 상세 이미지 로드 (DB에서)
+        const images = await getProductImages(id);
+        
+        // 이미지가 없으면 썸네일만 사용
+        if (images.length === 0) {
+          setProductImages([productData.thumbnail_url]);
+        } else {
+          setProductImages(images);
+        }
+        
+        console.log('📸 Loaded images:', images.length);
         
         // 조회수 증가 (비동기로 실행, 에러 무시)
         if (productData) {
@@ -73,6 +82,36 @@ const ProductDetail: React.FC = () => {
     navigate('/checkout');
   };
 
+  // 스와이프 제스처 핸들러
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      // 왼쪽으로 스와이프 → 다음 이미지
+      setCurrentImageIndex((prev) => (prev === productImages.length - 1 ? 0 : prev + 1));
+    }
+    
+    if (isRightSwipe) {
+      // 오른쪽으로 스와이프 → 이전 이미지
+      setCurrentImageIndex((prev) => (prev === 0 ? productImages.length - 1 : prev - 1));
+    }
+  };
+
   return (
     <div className="animate-fadeIn pb-32">
       {/* Top Bar */}
@@ -86,26 +125,73 @@ const ProductDetail: React.FC = () => {
       </div>
 
       {/* Image Gallery */}
-      <div className="aspect-square bg-[#F2F2F5] overflow-hidden relative">
-        <img src={productImages[currentImageIndex] || product.thumbnail_url} alt={product.name} className="w-full h-full object-cover" />
+      <div 
+        className="aspect-square bg-[#F2F2F5] overflow-hidden relative group"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* 이미지 */}
+        <img 
+          src={productImages[currentImageIndex] || product.thumbnail_url} 
+          alt={product.name} 
+          className="w-full h-full object-cover transition-opacity duration-300" 
+        />
         
         {/* 할인 배지 */}
         {product.original_price && product.price && (
-          <div className="absolute top-4 left-4 bg-[#FF5C02] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+          <div className="absolute top-4 left-4 bg-[#FF5C02] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg z-10">
             {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% 할인
           </div>
         )}
         
+        {/* 좌우 네비게이션 버튼 (이미지 2개 이상일 때만) */}
+        {productImages.length > 1 && (
+          <>
+            {/* 이전 버튼 */}
+            <button
+              onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? productImages.length - 1 : prev - 1))}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              aria-label="이전 이미지"
+            >
+              <svg className="w-6 h-6 text-[#1C1C1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            {/* 다음 버튼 */}
+            <button
+              onClick={() => setCurrentImageIndex((prev) => (prev === productImages.length - 1 ? 0 : prev + 1))}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              aria-label="다음 이미지"
+            >
+              <svg className="w-6 h-6 text-[#1C1C1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        )}
+        
         {/* 이미지 인디케이터 */}
         {productImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black/30 backdrop-blur px-3 py-2 rounded-full">
             {productImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`w-2 h-2 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-white/50'}`}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  index === currentImageIndex ? 'bg-white w-6' : 'bg-white/60'
+                }`}
+                aria-label={`이미지 ${index + 1}로 이동`}
               />
             ))}
+          </div>
+        )}
+        
+        {/* 이미지 카운터 */}
+        {productImages.length > 1 && (
+          <div className="absolute top-4 right-4 bg-black/50 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-medium">
+            {currentImageIndex + 1} / {productImages.length}
           </div>
         )}
       </div>

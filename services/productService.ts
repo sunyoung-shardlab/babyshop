@@ -41,6 +41,32 @@ async function supabaseFetch(endpoint: string, options: RequestInit = {}) {
 }
 
 /**
+ * 상품 이미지 목록 조회 (순서대로)
+ */
+export async function getProductImages(productId: string): Promise<string[]> {
+  try {
+    console.log('🔍 [getProductImages] Loading images for product:', productId);
+    
+    const images = await supabaseFetch(
+      `/product_images?product_id=eq.${productId}&order=sort_order.asc`
+    );
+    
+    if (!images || images.length === 0) {
+      console.warn('⚠️ [getProductImages] No images found, returning empty array');
+      return [];
+    }
+    
+    const imageUrls = images.map((img: any) => img.image_url);
+    console.log('✅ [getProductImages] Loaded', imageUrls.length, 'images');
+    
+    return imageUrls;
+  } catch (error) {
+    console.error('❌ [getProductImages] Error:', error);
+    return [];
+  }
+}
+
+/**
  * 제품을 DB 형식에서 앱 형식으로 변환
  */
 function transformProduct(dbProduct: any): Product {
