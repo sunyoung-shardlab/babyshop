@@ -99,30 +99,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handleSignOut = async () => {
-    console.log('🚪 Starting logout...');
+    console.log('🚪 [handleSignOut] Starting logout...');
     
-    // 1. 로컬 상태 즉시 초기화 (먼저 처리)
-    setUser(null);
-    setAuthUser(null);
-    
-    // 2. localStorage 완전 정리
-    localStorage.clear();
-    
-    // 3. Supabase 로그아웃 시도 (백그라운드, 실패해도 무시)
-    if (supabase) {
-      authSignOut().catch((error) => {
-        console.warn('⚠️ Supabase signout failed (ignored):', error);
-      });
+    try {
+      // 1. Supabase 로그아웃 (타임아웃 10초)
+      if (supabase) {
+        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 10s)...');
+        
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Logout timeout after 10s')), 10000);
+        });
+        
+        await Promise.race([
+          authSignOut(),
+          timeoutPromise
+        ]);
+        
+        console.log('✅ [handleSignOut] Supabase signOut completed');
+      }
+      
+      // 2. 로컬 상태 초기화
+      setUser(null);
+      setAuthUser(null);
+      
+      // 3. localStorage 정리
+      localStorage.clear();
+      
+      // 4. 홈으로 리다이렉트
+      console.log('✅ [handleSignOut] Redirecting to home...');
+      window.location.href = '/#/';
+      
+      // 5. 새로고침
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+      
+    } catch (error) {
+      console.error('⚠️ [handleSignOut] Error during logout:', error);
+      
+      // 에러 발생해도 강제 로그아웃
+      setUser(null);
+      setAuthUser(null);
+      localStorage.clear();
+      
+      console.log('⚠️ [handleSignOut] Force logout and redirect...');
+      window.location.href = '/#/';
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     }
-    
-    // 4. 즉시 홈으로 리다이렉트 (Supabase 응답 기다리지 않음)
-    console.log('✅ Logout completed, redirecting...');
-    window.location.href = '/#/';
-    
-    // 5. 약간의 딜레이 후 새로고침 (리다이렉트 완료 대기)
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
   };
 
   return (

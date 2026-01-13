@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { User as UserIcon, Package, Heart, LogOut } from 'lucide-react';
+import { debugCurrentSession } from '../services/authService';
 
 const MyPage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,6 +33,10 @@ const MyPage: React.FC = () => {
 
   const handleLogout = async () => {
     if (confirm('로그아웃 하시겠습니까?')) {
+      console.log('🔍 [MyPage] Checking session before logout...');
+      await debugCurrentSession();
+      
+      console.log('🔍 [MyPage] Calling signOut()...');
       await signOut();
     }
   };

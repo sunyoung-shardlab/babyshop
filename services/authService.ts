@@ -178,10 +178,31 @@ export const signInWithGoogle = async () => {
 
 // 로그아웃
 export const signOut = async () => {
-  if (!supabase) throw new Error('Supabase not initialized');
+  console.log('🔍 [signOut] Starting...');
+  
+  if (!supabase) {
+    console.error('❌ [signOut] Supabase not initialized');
+    throw new Error('Supabase not initialized');
+  }
 
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  console.log('🔍 [signOut] Calling supabase.auth.signOut()...');
+  const startTime = Date.now();
+  
+  try {
+    const { error } = await supabase.auth.signOut();
+    const duration = Date.now() - startTime;
+    
+    if (error) {
+      console.error('❌ [signOut] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [signOut] Success! (${duration}ms)`);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error(`❌ [signOut] Failed after ${duration}ms:`, error);
+    throw error;
+  }
 };
 
 // 현재 사용자 가져오기
@@ -190,6 +211,40 @@ export const getCurrentUser = async () => {
 
   const { data: { user } } = await supabase.auth.getUser();
   return user;
+};
+
+// 현재 세션 디버그 정보
+export const debugCurrentSession = async () => {
+  if (!supabase) {
+    console.log('🔍 [debugSession] Supabase not initialized');
+    return null;
+  }
+
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('❌ [debugSession] Error getting session:', error);
+      return null;
+    }
+    
+    if (session) {
+      console.log('🔍 [debugSession] Current session:', {
+        user_id: session.user.id,
+        email: session.user.email,
+        access_token: session.access_token.substring(0, 20) + '...',
+        refresh_token: session.refresh_token?.substring(0, 20) + '...',
+        expires_at: new Date(session.expires_at! * 1000).toISOString(),
+      });
+    } else {
+      console.log('🔍 [debugSession] No active session');
+    }
+    
+    return session;
+  } catch (error) {
+    console.error('❌ [debugSession] Exception:', error);
+    return null;
+  }
 };
 
 // 세션 감지
