@@ -10,6 +10,12 @@ const sendErrorToMonitoring = async (errorData: {
   user: string;
   timestamp: string;
 }) => {
+  // 환경 구분
+  const environment = import.meta.env.MODE; // 'development' 또는 'production'
+  const isProd = import.meta.env.PROD; // true 또는 false
+  const envEmoji = isProd ? '🚀' : '🔧';
+  const envLabel = isProd ? 'PRODUCTION' : 'DEVELOPMENT';
+  
   // Slack Webhook URL (환경변수에서 가져오기)
   const slackWebhookUrl = import.meta.env.VITE_SLACK_WEBHOOK_URL;
   
@@ -19,13 +25,13 @@ const sendErrorToMonitoring = async (errorData: {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: `🚨 *${errorData.type}*`,
+          text: `${envEmoji} *${envLabel}* - 🚨 *${errorData.type}*`,
           blocks: [
             {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `*🚨 에러 발생*\n*타입:* ${errorData.type}\n*유저:* ${errorData.user}\n*에러:* ${errorData.error}\n*시간:* ${errorData.timestamp}`
+                text: `*🚨 에러 발생*\n*환경:* ${envEmoji} *${envLabel}* (${environment})\n*타입:* ${errorData.type}\n*유저:* ${errorData.user}\n*에러:* ${errorData.error}\n*시간:* ${errorData.timestamp}\n*URL:* ${window.location.href}`
               }
             }
           ]
@@ -37,7 +43,7 @@ const sendErrorToMonitoring = async (errorData: {
   }
   
   // 콘솔에도 출력 (개발 환경)
-  console.error('📊 [Error Monitoring]:', errorData);
+  console.error(`📊 [Error Monitoring - ${envLabel}]:`, errorData);
 };
 
 interface AuthContextType {
@@ -139,12 +145,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('🚪 [handleSignOut] Starting logout...');
     
     try {
-      // 1. Supabase 로그아웃 (타임아웃 10초)
+      // 1. Supabase 로그아웃 (타임아웃 0.4초 - 테스트용)
       if (supabase) {
-        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 10s)...');
+        console.log('🔍 [handleSignOut] Waiting for Supabase signOut (max 0.4s - TEST MODE)...');
         
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Logout timeout after 10s')), 10000);
+          setTimeout(() => reject(new Error('Logout timeout after 0.4s')), 400);  // 10000 → 400 (테스트)
         });
         
       // 🧪 테스트: 강제로 에러 발생 (나중에 삭제!)
