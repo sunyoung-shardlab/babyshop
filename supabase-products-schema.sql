@@ -13,10 +13,9 @@ CREATE TABLE IF NOT EXISTS products (
   category TEXT NOT NULL,
   
   -- 가격 정보
-  price DECIMAL(10, 2) NOT NULL, -- 판매 가격
+  price DECIMAL(10, 2) NOT NULL, -- 판매 가격 (할인 적용 후)
   original_price DECIMAL(10, 2), -- 정가 (할인 전)
   is_on_sale BOOLEAN DEFAULT false, -- 할인 여부
-  sale_price DECIMAL(10, 2), -- 할인된 가격
   
   -- 판매 기한
   sale_start_date TIMESTAMPTZ, -- 판매 시작일
@@ -57,7 +56,7 @@ CREATE TABLE IF NOT EXISTS products (
   sales_count INTEGER DEFAULT 0,
   
   -- 정렬 & 노출
-  sort_order INTEGER DEFAULT 0, -- 정렬 순서 (낮을수록 앞에)
+  sort_order INTEGER DEFAULT 0, -- 노출도 rank (0=최우선 노출, 오름차순 정렬)
   
   -- 메타 정보
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -97,6 +96,7 @@ CREATE TABLE IF NOT EXISTS product_tags (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   product_id UUID REFERENCES products(id) ON DELETE CASCADE NOT NULL,
   tag TEXT NOT NULL,
+  sort_order INTEGER DEFAULT 0, -- 태그 노출 순서 (낮을수록 앞에)
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(product_id, tag)
 );
@@ -327,14 +327,14 @@ ON CONFLICT (name) DO NOTHING;
 
 -- 기존 MOCK_PRODUCTS 3개 제품 삽입
 INSERT INTO products (
-  id, name, price, original_price, is_on_sale, sale_price,
+  id, name, price, original_price, is_on_sale,
   thumbnail_url, category, description, is_halal, 
   stock_quantity, max_order_quantity, status, sale_end_date
 ) VALUES
   (
     '00000000-0000-0000-0000-000000000001'::UUID,
     '퓨어잇 유기농 떡뻥 (오리지널)',
-    18.50, 35.00, true, 18.50,
+    18.50, 35.00, true,
     '/images/tteok-ppeong.png',
     'Snacks',
     '100% 유기농 한국산 쌀 과자. 입에서 살살 녹는 질감으로 이유식 초기 아기에게 완벽합니다.',
@@ -344,7 +344,7 @@ INSERT INTO products (
   (
     '00000000-0000-0000-0000-000000000002'::UUID,
     '부드러운 아기 소고기 육포',
-    25.00, 30.00, true, 25.00,
+    25.00, 30.00, true,
     '/images/beef-jerky.png',
     'Snacks',
     '부드럽고 짜지 않은 아기 전용 소고기 육포. 고단백 영양 간식입니다.',
@@ -354,7 +354,7 @@ INSERT INTO products (
   (
     '00000000-0000-0000-0000-000000000003'::UUID,
     '프리미엄 동결건조 요거트 큐브',
-    22.00, 40.00, true, 22.00,
+    22.00, 40.00, true,
     '/images/yogurt-cubes.png',
     'Snacks',
     '입안에서 사르르 녹는 동결건조 요거트. 4가지 유산균이 살아있습니다.',
@@ -364,14 +364,11 @@ INSERT INTO products (
 ON CONFLICT (id) DO NOTHING;
 
 -- 각 제품에 태그 추가
-INSERT INTO product_tags (product_id, tag) VALUES
-  ('00000000-0000-0000-0000-000000000001'::UUID, '유기농'),
-  ('00000000-0000-0000-0000-000000000001'::UUID, '한국산'),
-  ('00000000-0000-0000-0000-000000000001'::UUID, '이유식'),
-  ('00000000-0000-0000-0000-000000000002'::UUID, '고단백'),
-  ('00000000-0000-0000-0000-000000000002'::UUID, '육포'),
-  ('00000000-0000-0000-0000-000000000002'::UUID, '한정판매'),
-  ('00000000-0000-0000-0000-000000000003'::UUID, '동결건조'),
-  ('00000000-0000-0000-0000-000000000003'::UUID, '요거트'),
-  ('00000000-0000-0000-0000-000000000003'::UUID, '유산균')
+-- 태그 종류: '할랄 인증', '핫딜'
+-- sort_order: 1=할랄 인증(먼저), 2=핫딜(나중)
+INSERT INTO product_tags (product_id, tag, sort_order) VALUES
+  ('00000000-0000-0000-0000-000000000001'::UUID, '할랄 인증', 1),
+  ('00000000-0000-0000-0000-000000000002'::UUID, '할랄 인증', 1),
+  ('00000000-0000-0000-0000-000000000002'::UUID, '핫딜', 2),
+  ('00000000-0000-0000-0000-000000000003'::UUID, '할랄 인증', 1)
 ON CONFLICT (product_id, tag) DO NOTHING;

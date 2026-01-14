@@ -52,10 +52,9 @@ function transformProduct(dbProduct: any): Product {
     category: dbProduct.category,
     
     // 가격
-    price: parseFloat(dbProduct.sale_price || dbProduct.price),
+    price: parseFloat(dbProduct.price),
     original_price: dbProduct.original_price ? parseFloat(dbProduct.original_price) : undefined,
     is_on_sale: dbProduct.is_on_sale,
-    sale_price: dbProduct.sale_price ? parseFloat(dbProduct.sale_price) : undefined,
     
     // 기한
     sale_start_date: dbProduct.sale_start_date,
@@ -110,7 +109,70 @@ function transformProduct(dbProduct: any): Product {
 }
 
 /**
- * 모든 활성 제품 조회
+ * 제품 목록에 태그 추가 (Fetch API 사용)
+ */
+async function attachTagsToProducts(products: Product[]): Promise<Product[]> {
+  if (products.length === 0) {
+    console.log('ℹ️ No products to attach tags');
+    return products;
+  }
+  
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.warn('⚠️ Supabase not configured, skipping tags');
+    return products.map(p => ({ ...p, tags: [] }));
+  }
+  
+  try {
+    const productIds = products.map(p => p.id);
+    console.log('🔍 Fetching tags for', productIds.length, 'products');
+    
+    // Fetch API로 직접 호출 (SDK abort 문제 회피)
+    // Supabase REST API: in 연산자 사용
+    const productIdsStr = productIds.join(',');
+    const url = `${SUPABASE_URL}/rest/v1/product_tags?product_id=in.(${productIdsStr})&order=sort_order.asc`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      console.warn('⚠️ Tags fetch failed:', response.status);
+      return products.map(p => ({ ...p, tags: [] }));
+    }
+    
+    const tagsData = await response.json();
+    console.log('✅ Tags fetched:', tagsData?.length || 0, 'records');
+    
+    // 제품별 태그 매핑
+    const tagsByProduct = new Map<string, string[]>();
+    (tagsData || []).forEach((item: any) => {
+      if (!tagsByProduct.has(item.product_id)) {
+        tagsByProduct.set(item.product_id, []);
+      }
+      tagsByProduct.get(item.product_id)!.push(item.tag);
+    });
+    
+    // 각 제품에 태그 추가
+    return products.map(product => ({
+      ...product,
+      tags: tagsByProduct.get(product.id) || []
+    }));
+  } catch (error) {
+    console.error('❌ 태그 조회 실패:', error);
+    // 에러 발생 시 빈 태그로 반환
+    return products.map(p => ({ ...p, tags: [] }));
+  }
+}
+
+/**
+ * 모든 활성 제품 조회 (태그 포함, 판매 종료 제품 제외)
  */
 export async function getAllProducts(): Promise<Product[]> {
   try {
@@ -122,7 +184,19 @@ export async function getAllProducts(): Promise<Product[]> {
     const data = await supabaseFetch(endpoint);
     
     console.log('✅ All products fetched:', data?.length || 0);
-    return (data || []).map(transformProduct);
+    let products = (data || []).map(transformProduct);
+    
+    // 판매 종료된 제품 제외 (sale_end_date가 있고 현재 시각보다 이전인 경우)
+    const now = new Date();
+    products = products.filter(product => {
+      if (!product.sale_end_date) return true; // 기한 없는 제품은 포함
+      return new Date(product.sale_end_date) > now; // 아직 종료되지 않은 제품만 포함
+    });
+    
+    console.log('✅ Active products (excluding expired):', products.length);
+    
+    // 태그 추가
+    return await attachTagsToProducts(products);
   } catch (error) {
     console.error('❌ 제품 조회 실패:', error);
     return [];
@@ -180,14 +254,15 @@ export async function getProductImages(productId: string): Promise<string[]> {
 }
 
 /**
- * 제품 태그 조회
+ * 제품 태그 조회 (정렬 순서 반영)
  */
 export async function getProductTags(productId: string): Promise<string[]> {
   try {
     const { data, error } = await supabase
       .from('product_tags')
       .select('tag')
-      .eq('product_id', productId);
+      .eq('product_id', productId)
+      .order('sort_order', { ascending: true }); // 정렬 순서 적용
 
     if (error) throw error;
     
@@ -222,7 +297,7 @@ export async function getProductsByCategory(category: string): Promise<Product[]
 }
 
 /**
- * 타임딜 제품 조회 (판매 기한이 있는 제품)
+ * 타임딜 제품 조회 (판매 기한이 있는 제품, 태그 포함)
  */
 export async function getTimeDealProducts(): Promise<Product[]> {
   try {
@@ -230,12 +305,15 @@ export async function getTimeDealProducts(): Promise<Product[]> {
     
     // Fetch API로 직접 호출
     const currentDate = new Date().toISOString();
-    const endpoint = `/products?status=eq.active&deleted_at=is.null&sale_end_date=not.is.null&sale_end_date=gte.${currentDate}&order=sale_end_date.asc`;
+    const endpoint = `/products?status=eq.active&deleted_at=is.null&sale_end_date=not.is.null&sale_end_date=gte.${currentDate}&order=sort_order.asc,sale_end_date.asc`;
     
     const data = await supabaseFetch(endpoint);
     
     console.log('✅ Time deal products fetched:', data?.length || 0);
-    return (data || []).map(transformProduct);
+    const products = (data || []).map(transformProduct);
+    
+    // 태그 추가
+    return await attachTagsToProducts(products);
   } catch (error) {
     console.error('❌ 타임딜 제품 조회 실패:', error);
     return [];
@@ -243,7 +321,7 @@ export async function getTimeDealProducts(): Promise<Product[]> {
 }
 
 /**
- * 일반 제품 조회 (판매 기한 없는 제품)
+ * 일반 제품 조회 (판매 기한 없는 제품, 태그 포함)
  */
 export async function getRegularProducts(): Promise<Product[]> {
   try {
@@ -255,7 +333,10 @@ export async function getRegularProducts(): Promise<Product[]> {
     const data = await supabaseFetch(endpoint);
     
     console.log('✅ Regular products fetched:', data?.length || 0);
-    return (data || []).map(transformProduct);
+    const products = (data || []).map(transformProduct);
+    
+    // 태그 추가
+    return await attachTagsToProducts(products);
   } catch (error) {
     console.error('❌ 일반 제품 조회 실패:', error);
     return [];
@@ -286,7 +367,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 }
 
 /**
- * 신상품 조회
+ * 신상품 조회 (노출도 순서 적용)
  */
 export async function getNewProducts(): Promise<Product[]> {
   try {
@@ -296,6 +377,7 @@ export async function getNewProducts(): Promise<Product[]> {
       .eq('status', 'active')
       .eq('is_new', true)
       .is('deleted_at', null)
+      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(10);
 

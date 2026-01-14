@@ -18,10 +18,9 @@ K-Baby Malaysia 쇼핑몰의 제품 데이터베이스 스키마입니다.
 | `brand` | TEXT | 브랜드 | ❌ |
 | `category` | TEXT | 카테고리 | ✅ |
 | **가격 정보** | | | |
-| `price` | DECIMAL | 판매 가격 | ✅ |
+| `price` | DECIMAL | 판매 가격 (할인 적용 후) | ✅ |
 | `original_price` | DECIMAL | 정가 (할인 전) | ❌ |
 | `is_on_sale` | BOOLEAN | 할인 여부 | ✅ |
-| `sale_price` | DECIMAL | 할인된 가격 | ❌ |
 | **판매 기한** | | | |
 | `sale_start_date` | TIMESTAMPTZ | 판매 시작일 | ❌ |
 | `sale_end_date` | TIMESTAMPTZ | 판매 종료일 (NULL=기한없음) | ❌ |

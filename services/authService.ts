@@ -33,11 +33,18 @@ function initializeSupabase(): SupabaseClient | null {
   }
 
   try {
-    // Supabase 클라이언트 생성 (최소 설정으로 변경)
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    // Supabase 클라이언트 생성 (세션 영속성 설정 추가)
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,        // 세션을 localStorage에 저장
+        autoRefreshToken: true,       // 자동으로 토큰 갱신
+        detectSessionInUrl: true,     // URL에서 세션 감지 (OAuth 리다이렉트용)
+        storage: window.localStorage, // 명시적으로 localStorage 사용
+      }
+    });
 
     isInitialized = true;
-    console.log('✅ Supabase initialized successfully');
+    console.log('✅ Supabase initialized successfully (persistSession: true)');
     return supabaseClient;
   } catch (error) {
     console.error('❌ Supabase initialization failed:', error);

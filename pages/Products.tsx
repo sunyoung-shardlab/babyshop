@@ -58,15 +58,10 @@ const Products: React.FC = () => {
                     alt={product.name}
                     className="object-cover w-full h-full group-hover:scale-105 transition-transform"
                   />
-                  {/* 배지 */}
-                  {product.sale_end_date && (
-                    <div className="absolute top-2 left-2 bg-[#FF5C02] text-white px-2 py-1 text-xs rounded font-bold">
-                      핫딜
-                    </div>
-                  )}
-                  {product.is_halal && (
-                    <div className="absolute top-2 right-2 bg-[#E3FFF1] text-[#06C270] px-2 py-1 text-xs rounded font-bold">
-                      할랄
+                  {/* 할랄 인증 아이콘 (쇼핑 탭) */}
+                  {product.tags?.includes('할랄 인증') && (
+                    <div className="absolute top-2 right-2">
+                      <img src="/images/halal-icon.png" alt="할랄 인증" className="w-7 h-7" />
                     </div>
                   )}
                 </div>
@@ -86,6 +81,14 @@ const Products: React.FC = () => {
                       </span>
                     )}
                   </div>
+                  
+                  {/* 핫딜 태그 (가격 하단) */}
+                  {product.sale_end_date && (
+                    <div className="inline-block bg-[#FFE5E5] text-[#FF5C02] px-2 py-0.5 text-xs rounded font-bold">
+                      핫딜
+                    </div>
+                  )}
+                  
                   <p className="text-xs text-[#8F90A6]">{product.category}</p>
                   {product.stock_quantity < 10 && (
                     <p className="text-xs text-[#FF8800] font-bold">

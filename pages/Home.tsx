@@ -21,6 +21,17 @@ const Home: React.FC = () => {
           getTimeDealProducts(),
           getRegularProducts()
         ]);
+        
+        // 디버깅: 제품 태그 확인
+        console.log('🏠 [Home] Time deal products:', timeDeals.map(p => ({ 
+          name: p.name, 
+          tags: p.tags 
+        })));
+        console.log('🏠 [Home] Regular products:', regular.map(p => ({ 
+          name: p.name, 
+          tags: p.tags 
+        })));
+        
         setTimeDealProducts(timeDeals);
         setRegularProducts(regular);
       } catch (error) {
@@ -85,9 +96,10 @@ const Home: React.FC = () => {
                         {discountRate}% 할인
                       </div>
                     )}
-                    {product.category && (
-                      <div className="absolute top-2 right-2 bg-white/90 text-[#555770] px-2 py-0.5 text-[10px] rounded font-medium">
-                        #{product.category}
+                    {/* 할랄 인증 아이콘 (주간 영역 - 핫딜 태그 불필요) */}
+                    {product.tags?.includes('할랄 인증') && (
+                      <div className="absolute top-2 right-2">
+                        <img src="/images/halal-icon.png" alt="할랄 인증" className="w-8 h-8" />
                       </div>
                     )}
                   </div>
@@ -129,15 +141,18 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-2 gap-4">
             {regularProducts.map(product => (
               <Link key={product.id} to={`/product/${product.id}`} className="space-y-2 group">
-                <div className="aspect-square rounded-lg overflow-hidden border border-[#E7EBEF] bg-white shadow-sm group-hover:shadow-md transition-shadow">
+                <div className="aspect-square rounded-lg overflow-hidden border border-[#E7EBEF] bg-white shadow-sm group-hover:shadow-md transition-shadow relative">
                   <img src={product.thumbnail_url} alt={product.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform" />
+                  {/* 할랄 인증 아이콘 (상시 영역) */}
+                  {product.tags?.includes('할랄 인증') && (
+                    <div className="absolute top-2 right-2">
+                      <img src="/images/halal-icon.png" alt="할랄 인증" className="w-6 h-6" />
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-0.5">
                   <h3 className="font-medium text-xs line-clamp-2 h-8 text-[#1C1C1C]">{product.name}</h3>
                   <p className="text-[#FF5C02] font-bold text-sm">RM {product.price.toFixed(2)}</p>
-                  {product.is_halal && (
-                    <span className="inline-block bg-[#E3FFF1] text-[#06C270] text-[8px] px-2 py-0.5 rounded font-bold uppercase">할랄 인증</span>
-                  )}
                 </div>
               </Link>
             ))}

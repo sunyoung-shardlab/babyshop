@@ -9,10 +9,9 @@ export interface Product {
   category: string;
   
   // 가격 정보
-  price: number; // 판매 가격
-  original_price?: number; // 정가
+  price: number; // 판매 가격 (할인 적용 후)
+  original_price?: number; // 정가 (할인 전)
   is_on_sale: boolean; // 할인 여부
-  sale_price?: number; // 할인된 가격
   
   // 판매 기한
   sale_start_date?: string;
