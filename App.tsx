@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
+import ContentDetail from './pages/ContentDetail';
 import Products from './pages/Products';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -10,6 +11,7 @@ import ProfileSetup from './pages/ProfileSetup';
 import ReviewEditor from './pages/ReviewEditor';
 import MyPage from './pages/MyPage';
 import Cart from './pages/Cart';
+import Likes from './pages/Likes';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFail from './pages/PaymentFail';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -38,6 +40,7 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/content/:id" element={<ContentDetail />} />
           <Route path="/products" element={<Products />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -52,7 +55,7 @@ const AppContent: React.FC = () => {
           } />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/fail" element={<PaymentFail />} />
-          <Route path="/likes" element={<div className="p-10 text-center text-[#8F90A6] bg-[#FAFAFC] min-h-screen">찜한 상품이 없습니다.</div>} />
+          <Route path="/likes" element={<Likes />} />
           <Route path="/welcome-coupon" element={
             <div className="p-10 flex flex-col items-center text-center space-y-6 bg-[#FAFAFC] min-h-screen">
               <div className="w-24 h-24 bg-[#FF5C02] text-white rounded-full flex items-center justify-center text-3xl font-bold animate-bounce">10%</div>

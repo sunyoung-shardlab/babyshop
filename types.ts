@@ -144,6 +144,31 @@ export interface ContentTip {
   targetMonths: number;
 }
 
+export interface Content {
+  id: string;
+  title: string;
+  subtitle?: string;
+  thumbnail_url: string;
+  content_html: string;
+  created_at: string;
+  published_at?: string;
+  status: 'draft' | 'published' | 'archived';
+  view_count: number;
+  like_count: number;
+  sort_order: number;
+  updated_at: string;
+  
+  // 사용자 관련 (클라이언트에서 추가)
+  is_liked?: boolean; // 현재 사용자가 좋아요 했는지
+}
+
+export interface ContentLike {
+  id: string;
+  content_id: string;
+  user_id: string;
+  created_at: string;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;

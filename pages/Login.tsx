@@ -25,7 +25,13 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
+      // Google 로그인 전에 리다이렉트 경로 저장
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+      console.log('🔍 [Google Login] Redirect path before login:', redirectPath);
+      
       await signInWithGoogle();
+      // Google 로그인은 페이지 리다이렉트를 사용하므로 
+      // 로그인 후 AuthContext의 onAuthStateChange에서 처리됨
     } catch (error: any) {
       alert(error.message || '구글 로그인에 실패했습니다.');
     } finally {
@@ -66,8 +72,24 @@ const Login: React.FC = () => {
       }
       
       const { user } = await signInWithEmail(formData.emailOrUsername, formData.password);
+      console.log('✅ Login successful, user:', user.email);
+      
       signIn(user);
-      navigate('/');
+      console.log('✅ signIn() called');
+      
+      // 리다이렉트 URL 확인 (컨텐츠 상세에서 온 경우)
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+      console.log('🔍 Checking sessionStorage for redirectAfterLogin:', redirectPath);
+      console.log('🔍 All sessionStorage keys:', Object.keys(sessionStorage));
+      
+      if (redirectPath) {
+        console.log('🔄 Redirecting to saved path:', redirectPath);
+        sessionStorage.removeItem('redirectAfterLogin');
+        navigate(redirectPath);
+      } else {
+        console.log('🏠 No redirect path, going to home');
+        navigate('/');
+      }
     } catch (error: any) {
       if (error.message.includes('Invalid login credentials')) {
         alert('이메일 또는 비밀번호가 올바르지 않습니다.');

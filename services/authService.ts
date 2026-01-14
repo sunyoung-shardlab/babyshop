@@ -192,38 +192,67 @@ export const signOut = async () => {
     throw new Error('Supabase not initialized');
   }
 
-  console.log('🔍 [signOut] Calling supabase.auth.signOut() with scope: global (secure)...');
+  console.log('🔍 [signOut] Logging out from Supabase...');
   const startTime = Date.now();
   
   try {
-    // scope: 'global' → 모든 기기에서 로그아웃 + 서버에서 refresh_token 삭제 (보안!)
-    const { error } = await supabase.auth.signOut({ scope: 'global' });
-    const duration = Date.now() - startTime;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     
-    if (error) {
-      console.error('❌ [signOut] Error:', error);
-      
-      // 403 session_not_found는 이미 로그아웃된 상태이므로 무시
-      if (error.message?.includes('session_not_found') || error.status === 403) {
-        console.warn('⚠️ [signOut] Session already invalid (403). Proceeding with local cleanup...');
-        return; // 에러를 throw하지 않고 정상 처리
+    // 1. localStorage에서 access_token 가져오기
+    let accessToken = supabaseAnonKey;
+    const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+    if (projectRef) {
+      const storageKey = `sb-${projectRef}-auth-token`;
+      const authStorage = localStorage.getItem(storageKey);
+      if (authStorage) {
+        const authData = JSON.parse(authStorage);
+        accessToken = authData?.access_token || supabaseAnonKey;
       }
-      
-      throw error;
     }
     
-    console.log(`✅ [signOut] Success! (${duration}ms)`);
+    // 2. Supabase 서버에서 refresh_token 삭제 (Fetch API 사용)
+    try {
+      console.log('🔍 [signOut] Calling Supabase logout API...');
+      const logoutResponse = await fetch(`${supabaseUrl}/auth/v1/logout`, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseAnonKey,
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (logoutResponse.ok) {
+        console.log('✅ [signOut] Server logout successful (refresh_token deleted)');
+      } else {
+        console.warn('⚠️ [signOut] Server logout failed, but continuing with local cleanup');
+      }
+    } catch (err) {
+      console.warn('⚠️ [signOut] Server logout error, but continuing with local cleanup:', err);
+    }
+    
+    // 3. localStorage 정리 (클라이언트 측)
+    if (projectRef) {
+      const storageKey = `sb-${projectRef}-auth-token`;
+      localStorage.removeItem(storageKey);
+      console.log(`✅ [signOut] Removed ${storageKey} from localStorage`);
+    }
+    
+    // 모든 Supabase 관련 localStorage 항목 삭제
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('sb-') || key.includes('supabase')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    const duration = Date.now() - startTime;
+    console.log(`✅ [signOut] Complete! (${duration}ms)`);
   } catch (error: any) {
     const duration = Date.now() - startTime;
     console.error(`❌ [signOut] Failed after ${duration}ms:`, error);
-    
-    // 403 session_not_found는 이미 로그아웃된 상태
-    if (error.message?.includes('session_not_found') || error.status === 403) {
-      console.warn('⚠️ [signOut] Session already invalid (403). Proceeding with local cleanup...');
-      return; // 에러를 throw하지 않고 정상 처리
-    }
-    
-    throw error;
+    // localStorage 정리 실패는 무시하고 계속 진행
+    console.warn('⚠️ [signOut] Proceeding despite error...');
   }
 };
 

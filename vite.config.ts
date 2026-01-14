@@ -8,6 +8,15 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        // HMR 최적화
+        hmr: {
+          overlay: true,
+        },
+        // 파일 감시 최적화
+        watch: {
+          // node_modules 제외
+          ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
+        },
       },
       plugins: [react()],
       define: {
@@ -18,6 +27,22 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      // 최적화 옵션
+      optimizeDeps: {
+        include: ['react', 'react-dom', 'react-router-dom'],
+        exclude: ['@supabase/supabase-js'],
+      },
+      // 빌드 최적화
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+              'supabase': ['@supabase/supabase-js'],
+            },
+          },
+        },
+      },
     };
 });

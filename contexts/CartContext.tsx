@@ -33,8 +33,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
-        const { data: { session } } = await supabase.auth.getSession();
-        const userId = session?.user?.id || null;
+        // localStorage에서 직접 세션 확인 (AbortError 방지)
+        let userId: string | null = null;
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+          if (projectRef) {
+            const storageKey = `sb-${projectRef}-auth-token`;
+            const authStorage = localStorage.getItem(storageKey);
+            if (authStorage) {
+              const authData = JSON.parse(authStorage);
+              userId = authData?.user?.id || null;
+            }
+          }
+        } catch (e) {
+          console.log('Using localStorage fallback');
+        }
+        
         setCurrentUserId(userId);
         
         if (userId) {

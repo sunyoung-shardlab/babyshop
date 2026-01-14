@@ -132,6 +132,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log('✅ User state updated:', session.user.email);
             setAuthUser(session.user);
             setUser(convertAuthUserToUser(session.user));
+            
+            // Google 로그인 후 리다이렉트 처리
+            if (event === 'SIGNED_IN') {
+              const redirectPath = sessionStorage.getItem('redirectAfterLogin');
+              if (redirectPath) {
+                console.log('🔄 [AuthContext] Redirecting to saved path:', redirectPath);
+                sessionStorage.removeItem('redirectAfterLogin');
+                // HashRouter 사용 중이므로 window.location.hash 변경
+                window.location.hash = redirectPath;
+              }
+            }
           } else {
             console.log('❌ User signed out');
             setAuthUser(null);

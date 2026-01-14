@@ -1,25 +1,28 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MOCK_TIPS, COLORS } from '../constants';
+import { COLORS } from '../constants';
 import { ArrowRight, Star, Clock, Tag } from 'lucide-react';
-import { Product } from '../types';
+import { Product, Content } from '../types';
 import { getTimeDealProducts, getRegularProducts } from '../services/productService';
+import { getAllContents } from '../services/contentService';
 import OnboardingFlow from '../components/OnboardingFlow';
 import { CountdownTimer } from '../components/CountdownTimer';
 
 const Home: React.FC = () => {
   const [timeDealProducts, setTimeDealProducts] = useState<Product[]>([]);
   const [regularProducts, setRegularProducts] = useState<Product[]>([]);
+  const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
-        const [timeDeals, regular] = await Promise.all([
+        const [timeDeals, regular, contentsList] = await Promise.all([
           getTimeDealProducts(),
-          getRegularProducts()
+          getRegularProducts(),
+          getAllContents()
         ]);
         
         // 디버깅: 제품 태그 확인
@@ -34,14 +37,15 @@ const Home: React.FC = () => {
         
         setTimeDealProducts(timeDeals);
         setRegularProducts(regular);
+        setContents(contentsList);
       } catch (error) {
-        console.error('제품 로드 실패:', error);
+        console.error('데이터 로드 실패:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadProducts();
+    loadData();
   }, []);
 
   return (
@@ -160,19 +164,52 @@ const Home: React.FC = () => {
         )}
       </section>
 
-      {/* Content Tips */}
-      <section className="px-6 space-y-4">
-        <h2 className="text-xl font-bold text-[#1C1C1C]">육아 팁</h2>
-        <div className="space-y-3">
-          {MOCK_TIPS.map(tip => (
-            <div key={tip.id} className="flex gap-3 items-center p-4 border border-[#E7EBEF] rounded-lg bg-white shadow-sm">
-              <img src={tip.thumbnail} className="w-20 h-20 object-cover rounded-lg" alt={tip.title} />
-              <div className="flex-1 space-y-1">
-                <h4 className="font-bold text-sm leading-snug text-[#1C1C1C]">{tip.title}</h4>
-                <p className="text-[10px] text-[#8F90A6] uppercase tracking-wider">{tip.targetMonths}개월 이유식</p>
-              </div>
-            </div>
-          ))}
+      {/* Content Tips - Figma Design */}
+      <section className="space-y-4" id="parenting-tips-section">
+        <h2 className="text-xl font-bold text-[#1C1C1C] px-6">육아 팁</h2>
+        <div className="flex gap-4 overflow-x-auto pb-4 px-6 no-scrollbar">
+          {contents.map(content => {
+            const formattedDate = content.published_at 
+              ? new Date(content.published_at).toLocaleDateString('ko-KR', { 
+                  year: 'numeric', 
+                  month: 'numeric', 
+                  day: 'numeric' 
+                }).replace(/\./g, '.').trim()
+              : '';
+            
+            return (
+              <Link 
+                key={content.id} 
+                to={`/content/${content.id}`}
+                className="flex-shrink-0 w-72 group"
+              >
+                <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                  {/* Background Image */}
+                  <img 
+                    src={content.thumbnail_url} 
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                    alt={content.title} 
+                  />
+                  
+                  {/* Dark Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                  
+                  {/* Text Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2 text-white">
+                    <h4 className="font-bold text-lg leading-snug">{content.title}</h4>
+                    {content.subtitle && (
+                      <p className="text-sm text-white/90 leading-relaxed">{content.subtitle}</p>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Date Below Card */}
+                {formattedDate && (
+                  <p className="text-center text-sm text-[#8F90A6] mt-3">{formattedDate}</p>
+                )}
+              </Link>
+            );
+          })}
         </div>
       </section>
       

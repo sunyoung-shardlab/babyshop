@@ -56,7 +56,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Link>
         <Link to="/likes" className={`flex flex-col items-center p-2 ${isActive('/likes') ? 'text-[#FF5C02]' : 'text-[#C7C9D9]'}`}>
           <Heart size={20} />
-          <span className="text-[10px] mt-1 font-medium">찜</span>
+          <span className="text-[10px] mt-1 font-medium">저장</span>
         </Link>
         <Link to="/mypage" className={`flex flex-col items-center p-2 ${isActive('/mypage') ? 'text-[#FF5C02]' : 'text-[#C7C9D9]'}`}>
           <User size={20} />

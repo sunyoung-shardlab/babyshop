@@ -160,3 +160,110 @@ CREATE TRIGGER update_orders_updated_at
 -- ============================================
 -- 전체 스키마는 supabase-products-schema.sql 참고
 -- Supabase Dashboard에서 해당 파일 실행 필요
+
+-- ============================================
+-- 육아 팁 컨텐츠 시스템 (Content System)
+-- ============================================
+
+-- 1. contents 테이블 (컨텐츠)
+CREATE TABLE IF NOT EXISTS contents (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  
+  -- 기본 정보
+  title TEXT NOT NULL,
+  subtitle TEXT,
+  
+  -- 이미지 & 내용
+  thumbnail_url TEXT NOT NULL,
+  content_html TEXT NOT NULL,
+  
+  -- 날짜
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  published_at TIMESTAMPTZ,
+  
+  -- 상태
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
+  
+  -- 통계
+  view_count INTEGER DEFAULT 0,
+  like_count INTEGER DEFAULT 0,
+  
+  -- 정렬
+  sort_order INTEGER DEFAULT 0,
+  
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. content_likes 테이블 (좋아요/저장)
+CREATE TABLE IF NOT EXISTS content_likes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  content_id UUID REFERENCES contents(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(content_id, user_id)
+);
+
+-- 인덱스 생성
+CREATE INDEX IF NOT EXISTS idx_contents_status ON contents(status);
+CREATE INDEX IF NOT EXISTS idx_contents_published_at ON contents(published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_contents_sort_order ON contents(sort_order);
+CREATE INDEX IF NOT EXISTS idx_content_likes_content_id ON content_likes(content_id);
+CREATE INDEX IF NOT EXISTS idx_content_likes_user_id ON content_likes(user_id);
+
+-- contents RLS 정책
+ALTER TABLE contents ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can view published contents" ON contents;
+CREATE POLICY "Anyone can view published contents" 
+  ON contents FOR SELECT 
+  USING (status = 'published');
+
+-- content_likes RLS 정책
+ALTER TABLE content_likes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own likes" ON content_likes;
+CREATE POLICY "Users can view own likes" 
+  ON content_likes FOR SELECT 
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own likes" ON content_likes;
+CREATE POLICY "Users can manage own likes" 
+  ON content_likes 
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- 트리거: updated_at 자동 업데이트
+DROP TRIGGER IF EXISTS update_contents_updated_at ON contents;
+CREATE TRIGGER update_contents_updated_at
+    BEFORE UPDATE ON contents
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- 컨텐츠 관련 함수
+CREATE OR REPLACE FUNCTION increment_content_like(content_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE contents 
+  SET like_count = like_count + 1 
+  WHERE id = content_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION decrement_content_like(content_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE contents 
+  SET like_count = GREATEST(like_count - 1, 0)
+  WHERE id = content_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION increment_content_view(content_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE contents 
+  SET view_count = view_count + 1 
+  WHERE id = content_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
