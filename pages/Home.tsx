@@ -99,7 +99,7 @@ const Home: React.FC = () => {
                     {/* 할랄 인증 아이콘 (주간 영역 - 핫딜 태그 불필요) */}
                     {product.tags?.includes('할랄 인증') && (
                       <div className="absolute top-2 right-2">
-                        <img src="/images/halal-icon.png" alt="할랄 인증" className="w-8 h-8" />
+                        <img src="https://cnumxvxxyxexzzyeinjr.supabase.co/storage/v1/object/public/product-images/halal-icon.png" alt="할랄 인증" className="w-8 h-8" />
                       </div>
                     )}
                   </div>
@@ -146,7 +146,7 @@ const Home: React.FC = () => {
                   {/* 할랄 인증 아이콘 (상시 영역) */}
                   {product.tags?.includes('할랄 인증') && (
                     <div className="absolute top-2 right-2">
-                      <img src="/images/halal-icon.png" alt="할랄 인증" className="w-6 h-6" />
+                      <img src="https://cnumxvxxyxexzzyeinjr.supabase.co/storage/v1/object/public/product-images/halal-icon.png" alt="할랄 인증" className="w-6 h-6" />
                     </div>
                   )}
                 </div>

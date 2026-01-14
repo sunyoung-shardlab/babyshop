@@ -61,7 +61,7 @@ const Products: React.FC = () => {
                   {/* 할랄 인증 아이콘 (쇼핑 탭) */}
                   {product.tags?.includes('할랄 인증') && (
                     <div className="absolute top-2 right-2">
-                      <img src="/images/halal-icon.png" alt="할랄 인증" className="w-7 h-7" />
+                      <img src="https://cnumxvxxyxexzzyeinjr.supabase.co/storage/v1/object/public/product-images/halal-icon.png" alt="할랄 인증" className="w-7 h-7" />
                     </div>
                   )}
                 </div>
