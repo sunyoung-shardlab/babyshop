@@ -72,7 +72,7 @@ const Checkout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFC] pb-32">
+    <div className="min-h-screen bg-[#FAFAFC] pb-40">
       {/* 헤더 */}
       <div className="bg-white border-b border-[#E7EBEF] sticky top-0 z-10">
         <div className="p-4 flex items-center gap-4">
@@ -215,7 +215,7 @@ const Checkout: React.FC = () => {
       </div>
 
       {/* 결제 버튼 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E7EBEF] p-4 max-w-4xl mx-auto">
+      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-[#E7EBEF] p-4 max-w-4xl mx-auto">
         <button
           onClick={handlePayment}
           disabled={isProcessing}

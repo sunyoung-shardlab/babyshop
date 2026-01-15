@@ -26,8 +26,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <div className="min-h-screen flex flex-col max-w-md mx-auto bg-[#FAFAFC] shadow-xl relative">
         {/* Header */}
       <header className="p-4 border-b border-[#E7EBEF] flex justify-between items-center bg-white sticky top-0 z-50">
-        <Link to="/" className="text-2xl font-bold text-[#FF5C02]">
-          K-Baby Malaysia
+        <Link to="/" className="flex items-center">
+          <img 
+            src="https://cnumxvxxyxexzzyeinjr.supabase.co/storage/v1/object/public/product-images/branding/logo.png" 
+            alt="K-Baby Malaysia" 
+            className="h-8"
+          />
         </Link>
         <Link to="/cart" onClick={handleCartClick} className="p-2 relative">
           <ShoppingCart size={24} color={COLORS.primary} />

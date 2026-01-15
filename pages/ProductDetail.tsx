@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { COLORS } from '../constants';
 import { ChevronLeft, Share2, Info, AlertTriangle, ShoppingCart, Clock, Package, Truck, Tag } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,6 +12,7 @@ import { getProductReviews, ReviewListItem } from '../services/reviewService';
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, loading } = useAuth();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -140,6 +141,11 @@ const ProductDetail: React.FC = () => {
     }
   };
 
+  const handleLoginRedirect = () => {
+    // 로그인 후 이 상품 페이지로 돌아올 수 있도록 현재 경로 저장
+    sessionStorage.setItem('redirectAfterLogin', location.pathname);
+  };
+
   return (
     <div className="animate-fadeIn pb-32">
       {/* Top Bar */}
@@ -172,7 +178,7 @@ const ProductDetail: React.FC = () => {
             {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% 할인
           </div>
         )}
-        
+
         {/* 좌우 네비게이션 버튼 (이미지 2개 이상일 때만) */}
         {productImages.length > 1 && (
           <>
@@ -216,10 +222,10 @@ const ProductDetail: React.FC = () => {
           </div>
         )}
         
-        {/* 이미지 카운터 */}
-        {productImages.length > 1 && (
-          <div className="absolute top-4 right-4 bg-black/50 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-medium z-10">
-            {currentImageIndex + 1} / {productImages.length}
+        {/* 할랄 인증 아이콘 (우측 상단) */}
+        {product.tags?.includes('할랄 인증') && (
+          <div className="absolute top-4 right-4 z-10">
+            <img src="https://cnumxvxxyxexzzyeinjr.supabase.co/storage/v1/object/public/product-images/halal-icon.png" alt="할랄 인증" className="w-10 h-10" />
           </div>
         )}
       </div>
@@ -232,7 +238,11 @@ const ProductDetail: React.FC = () => {
              <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-[#FF5C02] space-y-4">
                 <h3 className="text-xl font-bold text-[#1C1C1C]">회원 특가!</h3>
                 <p className="text-sm text-[#555770]">가입하시면 상세 정보와 특별 혜택을 확인하실 수 있습니다.</p>
-                <Link to="/login" className="block w-full bg-[#FF5C02] text-white py-3 rounded-lg font-bold hover:bg-[#FF7022] transition-colors">
+                <Link 
+                  to="/login" 
+                  onClick={handleLoginRedirect}
+                  className="block w-full bg-[#FF5C02] text-white py-3 rounded-lg font-bold hover:bg-[#FF7022] transition-colors"
+                >
                   3초만에 가입하기
                 </Link>
                 <p className="text-[10px] text-[#8F90A6]">10% 환영 쿠폰 즉시 발급</p>
@@ -243,18 +253,13 @@ const ProductDetail: React.FC = () => {
         <div className={isGuest ? 'blurred-guest' : 'space-y-6'}>
           {/* Header */}
           <div className="space-y-3">
-            <div className="flex justify-between items-start gap-3">
-              <h1 className="text-2xl font-bold leading-tight text-[#1C1C1C]">{product.name}</h1>
-              {product.is_halal && (
-                <span className="flex-shrink-0 bg-[#E3FFF1] text-[#06C270] text-[10px] px-2 py-1 rounded-full font-bold">HALAL</span>
-              )}
-            </div>
+            <h1 className="text-2xl font-bold leading-tight text-[#1C1C1C]">{product.name}</h1>
             
-            {/* 제품 태그 */}
-            {product.category && (
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="inline-flex items-center gap-1 bg-[#F2F2F5] text-[#555770] px-3 py-1 rounded-full text-xs font-medium">
-                  <Tag size={12} /> {product.category}
+            {/* 핫딜 태그 (한정 특가 상품) */}
+            {product.sale_end_date && new Date(product.sale_end_date) > new Date() && (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 bg-[#FFF3E0] text-[#FF5C02] px-3 py-1 rounded-full text-xs font-bold border border-[#FF5C02]">
+                  🔥 핫딜
                 </span>
               </div>
             )}

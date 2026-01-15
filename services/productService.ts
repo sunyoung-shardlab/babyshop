@@ -217,8 +217,13 @@ export async function getProductById(id: string): Promise<Product | null> {
     
     if (!data || data.length === 0) return null;
     
-    console.log('✅ Product fetched');
-    return transformProduct(data[0]);
+    const product = transformProduct(data[0]);
+    
+    // 태그 추가
+    const productsWithTags = await attachTagsToProducts([product]);
+    
+    console.log('✅ Product fetched with tags:', productsWithTags[0]?.tags);
+    return productsWithTags[0] || null;
   } catch (error) {
     console.error('❌ 제품 조회 실패:', error);
     return null;
