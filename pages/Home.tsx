@@ -168,48 +168,36 @@ const Home: React.FC = () => {
       <section className="space-y-4" id="parenting-tips-section">
         <h2 className="text-xl font-bold text-[#1C1C1C] px-6">육아 팁</h2>
         <div className="flex gap-4 overflow-x-auto pb-4 px-6 no-scrollbar">
-          {contents.map(content => {
-            const formattedDate = content.published_at 
-              ? new Date(content.published_at).toLocaleDateString('ko-KR', { 
-                  year: 'numeric', 
-                  month: 'numeric', 
-                  day: 'numeric' 
-                }).replace(/\./g, '.').trim()
-              : '';
-            
-            return (
-              <Link 
-                key={content.id} 
-                to={`/content/${content.id}`}
-                className="flex-shrink-0 w-72 group"
-              >
-                <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                  {/* Background Image */}
-                  <img 
-                    src={content.thumbnail_url} 
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                    alt={content.title} 
-                  />
-                  
-                  {/* Dark Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  
-                  {/* Text Overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2 text-white">
-                    <h4 className="font-bold text-lg leading-snug">{content.title}</h4>
-                    {content.subtitle && (
-                      <p className="text-sm text-white/90 leading-relaxed">{content.subtitle}</p>
-                    )}
+          {contents.map(content => (
+            <Link
+              key={content.id}
+              to={`/content/${content.id}`}
+              className="flex-shrink-0 w-72 group"
+            >
+              <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                {/* Background Image */}
+                <img
+                  src={content.thumbnail_url}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  alt={content.title}
+                />
+
+                {/* Dark Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+                {/* Text Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2 text-white">
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="font-bold text-lg leading-snug line-clamp-1">{content.title}</h4>
+                    <ArrowRight size={18} className="flex-shrink-0 opacity-90 group-hover:opacity-100" />
                   </div>
+                  {content.subtitle && (
+                    <p className="text-sm text-white/90 leading-relaxed line-clamp-2">{content.subtitle}</p>
+                  )}
                 </div>
-                
-                {/* Date Below Card */}
-                {formattedDate && (
-                  <p className="text-center text-sm text-[#8F90A6] mt-3">{formattedDate}</p>
-                )}
-              </Link>
-            );
-          })}
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
       
