@@ -104,7 +104,7 @@ const Login: React.FC = () => {
   return (
     <div className="p-10 flex flex-col h-full justify-center space-y-12 bg-[#FAFAFC]">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-[#1C1C1C]">다시 오신 것을 환영합니다!</h1>
+        <h1 className="text-3xl font-bold text-[#1C1C1C]">다시 오신 것을 환영합니다!</h1>
         <p className="text-sm text-[#555770]">로그인하여 아기를 위한 특별 혜택을 받아보세요.</p>
       </div>
 
