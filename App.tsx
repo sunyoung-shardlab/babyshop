@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProfileSetup from './pages/ProfileSetup';
 import ReviewEditor from './pages/ReviewEditor';
+import ReviewDetail from './pages/ReviewDetail';
 import MyPage from './pages/MyPage';
 import Cart from './pages/Cart';
 import Likes from './pages/Likes';
@@ -46,6 +47,7 @@ const AppContent: React.FC = () => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/review/:id" element={<ReviewEditor />} />
+          <Route path="/reviews/:id" element={<ReviewDetail />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={

@@ -7,6 +7,7 @@ import { useCart } from '../contexts/CartContext';
 import { Product } from '../types';
 import { getProductById, incrementProductView, getProductImages } from '../services/productService';
 import { CountdownTimer } from '../components/CountdownTimer';
+import { getProductReviews, ReviewListItem } from '../services/reviewService';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +17,8 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [reviews, setReviews] = useState<ReviewListItem[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
   const [productLoading, setProductLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -27,6 +30,7 @@ const ProductDetail: React.FC = () => {
       
       try {
         setProductLoading(true);
+        setCurrentImageIndex(0); // reset carousel index when product changes
         const productData = await getProductById(id);
         setProduct(productData);
         
@@ -54,6 +58,30 @@ const ProductDetail: React.FC = () => {
     };
 
     loadProduct();
+  }, [id]);
+
+  // If image list changes (async load), ensure index stays in range
+  useEffect(() => {
+    if (currentImageIndex >= productImages.length) {
+      setCurrentImageIndex(0);
+    }
+  }, [productImages.length, currentImageIndex]);
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      if (!id) return;
+      try {
+        setReviewsLoading(true);
+        const list = await getProductReviews(id);
+        setReviews(list);
+      } catch (e) {
+        console.error('리뷰 로드 실패:', e);
+        setReviews([]);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+    loadReviews();
   }, [id]);
 
   if (productLoading) {
@@ -151,7 +179,7 @@ const ProductDetail: React.FC = () => {
             {/* 이전 버튼 */}
             <button
               onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? productImages.length - 1 : prev - 1))}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur p-2 rounded-full shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
               aria-label="이전 이미지"
             >
               <svg className="w-6 h-6 text-[#1C1C1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +190,7 @@ const ProductDetail: React.FC = () => {
             {/* 다음 버튼 */}
             <button
               onClick={() => setCurrentImageIndex((prev) => (prev === productImages.length - 1 ? 0 : prev + 1))}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur p-2 rounded-full shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
               aria-label="다음 이미지"
             >
               <svg className="w-6 h-6 text-[#1C1C1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +202,7 @@ const ProductDetail: React.FC = () => {
         
         {/* 이미지 인디케이터 */}
         {productImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black/30 backdrop-blur px-3 py-2 rounded-full">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black/30 backdrop-blur px-3 py-2 rounded-full z-10">
             {productImages.map((_, index) => (
               <button
                 key={index}
@@ -190,14 +218,14 @@ const ProductDetail: React.FC = () => {
         
         {/* 이미지 카운터 */}
         {productImages.length > 1 && (
-          <div className="absolute top-4 right-4 bg-black/50 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-medium">
+          <div className="absolute top-4 right-4 bg-black/50 backdrop-blur text-white px-3 py-1 rounded-full text-xs font-medium z-10">
             {currentImageIndex + 1} / {productImages.length}
           </div>
         )}
       </div>
 
       {/* Info Container */}
-      <div className={`p-6 space-y-6 bg-[#FAFAFC] rounded-t-3xl -mt-6 relative z-10 ${isGuest ? 'overflow-hidden min-h-[500px]' : 'pb-8'}`}>
+      <div className={`p-6 space-y-6 bg-[#FAFAFC] relative ${isGuest ? 'overflow-hidden min-h-[500px]' : 'pb-8'}`}>
         
         {isGuest && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/40 backdrop-blur-md p-10 text-center">
@@ -334,6 +362,77 @@ const ProductDetail: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Reviews */}
+          <div className="space-y-3">
+            <h3 className="font-bold text-lg text-[#1C1C1C]">리뷰</h3>
+
+            {reviewsLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map(i => (
+                  <div key={i} className="h-24 bg-gray-200 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : reviews.length === 0 ? (
+              <div className="bg-white border border-[#E7EBEF] rounded-xl p-5 text-center text-sm text-[#8F90A6]">
+                아직 리뷰가 없습니다.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {reviews.map((r) => {
+                  const tags = (r.highlight_tags || []).slice(0, 3);
+                  const authorInitial = (r.author_name || 'U').trim().slice(0, 1).toUpperCase();
+                  return (
+                    <Link
+                      key={r.id}
+                      to={`/reviews/${r.id}`}
+                      className="flex gap-3 p-4 bg-white border border-[#E7EBEF] rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-[#F2F2F5] border border-[#E7EBEF] flex-shrink-0">
+                        {r.cover_image_url ? (
+                          <img src={r.cover_image_url} alt="리뷰 대표 이미지" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[#8F90A6] text-xs">
+                            NO IMAGE
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="font-bold text-sm text-[#1C1C1C] line-clamp-2">
+                          {r.summary_text || r.title || '후기'}
+                        </div>
+
+                        {tags.length > 0 && (
+                          <div className="flex gap-1.5 flex-wrap">
+                            {tags.map((t) => (
+                              <span key={t} className="bg-[#F2F2F5] text-[#555770] text-[10px] px-2 py-1 rounded-full font-bold">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-shrink-0 self-start">
+                        {r.author_avatar_url ? (
+                          <img
+                            src={r.author_avatar_url}
+                            alt="작성자"
+                            className="w-9 h-9 rounded-full object-cover border border-[#E7EBEF]"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-[#F2F2F5] text-[#555770] flex items-center justify-center font-bold text-xs border border-[#E7EBEF]">
+                            {authorInitial}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

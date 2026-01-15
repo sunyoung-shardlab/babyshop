@@ -6,6 +6,7 @@ import { ArrowRight, Star, Clock, Tag } from 'lucide-react';
 import { Product, Content } from '../types';
 import { getTimeDealProducts, getRegularProducts } from '../services/productService';
 import { getAllContents } from '../services/contentService';
+import { getAllReviews, ReviewListItem } from '../services/reviewService';
 import OnboardingFlow from '../components/OnboardingFlow';
 import { CountdownTimer } from '../components/CountdownTimer';
 
@@ -13,16 +14,18 @@ const Home: React.FC = () => {
   const [timeDealProducts, setTimeDealProducts] = useState<Product[]>([]);
   const [regularProducts, setRegularProducts] = useState<Product[]>([]);
   const [contents, setContents] = useState<Content[]>([]);
+  const [reviews, setReviews] = useState<ReviewListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [timeDeals, regular, contentsList] = await Promise.all([
+        const [timeDeals, regular, contentsList, reviewsList] = await Promise.all([
           getTimeDealProducts(),
           getRegularProducts(),
-          getAllContents()
+          getAllContents(),
+          getAllReviews(10)
         ]);
         
         // 디버깅: 제품 태그 확인
@@ -38,6 +41,7 @@ const Home: React.FC = () => {
         setTimeDealProducts(timeDeals);
         setRegularProducts(regular);
         setContents(contentsList);
+        setReviews(reviewsList);
       } catch (error) {
         console.error('데이터 로드 실패:', error);
       } finally {
@@ -160,6 +164,76 @@ const Home: React.FC = () => {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+      </section>
+
+      {/* Reviews Section */}
+      <section className="space-y-4 px-6">
+        <h2 className="text-xl font-bold text-[#1C1C1C]">리뷰</h2>
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-24 bg-gray-200 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="bg-white border border-[#E7EBEF] rounded-xl p-5 text-center text-sm text-[#8F90A6]">
+            아직 리뷰가 없습니다.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {reviews.map((r) => {
+              const tags = (r.highlight_tags || []).slice(0, 3);
+              const authorInitial = (r.author_name || 'U').trim().slice(0, 1).toUpperCase();
+              return (
+                <Link
+                  key={r.id}
+                  to={`/reviews/${r.id}`}
+                  className="flex gap-3 p-4 bg-white border border-[#E7EBEF] rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-[#F2F2F5] border border-[#E7EBEF] flex-shrink-0">
+                    {r.cover_image_url ? (
+                      <img src={r.cover_image_url} alt="리뷰 대표 이미지" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#8F90A6] text-xs">
+                        NO IMAGE
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="font-bold text-sm text-[#1C1C1C] line-clamp-2">
+                      {r.summary_text || r.title || '후기'}
+                    </div>
+
+                    {tags.length > 0 && (
+                      <div className="flex gap-1.5 flex-wrap">
+                        {tags.map((t) => (
+                          <span key={t} className="bg-[#F2F2F5] text-[#555770] text-[10px] px-2 py-1 rounded-full font-bold">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-shrink-0 self-start">
+                    {r.author_avatar_url ? (
+                      <img
+                        src={r.author_avatar_url}
+                        alt="작성자"
+                        className="w-9 h-9 rounded-full object-cover border border-[#E7EBEF]"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-[#F2F2F5] text-[#555770] flex items-center justify-center font-bold text-xs border border-[#E7EBEF]">
+                        {authorInitial}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>

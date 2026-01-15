@@ -99,11 +99,27 @@ export interface ProductReview {
   rating: number;
   title?: string;
   comment: string;
+  body_text?: string; // 후기 본문 (200자 이내)
   images?: string[];
   is_verified_purchase: boolean;
   helpful_count: number;
+  summary_text?: string;
+  summary_model?: string;
+  summary_generated_at?: string;
+  highlight_tags?: string[]; // 대표 태그들 (최대 3개)
+  author_name?: string; // 작성자 표시명 (스냅샷)
+  author_avatar_url?: string; // 작성자 썸네일 (스냅샷)
   created_at: string;
   updated_at: string;
+}
+
+export interface ProductReviewImage {
+  id: string;
+  review_id: string;
+  image_url: string;
+  kind: 'cover' | 'detail';
+  sort_order: number;
+  created_at: string;
 }
 
 export interface ProductLike {

@@ -110,11 +110,28 @@ CREATE TABLE IF NOT EXISTS product_reviews (
   rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
   title TEXT,
   comment TEXT,
+  body_text TEXT CHECK (body_text IS NULL OR char_length(body_text) <= 200), -- 후기 본문 (200자 이내)
   images TEXT[], -- 리뷰 이미지 URL 배열
+  summary_text TEXT, -- AI 1줄 요약 후기
+  summary_model TEXT, -- 요약에 사용된 모델
+  summary_generated_at TIMESTAMPTZ, -- 요약 생성 시각
+  highlight_tags TEXT[] DEFAULT '{}'::text[] CHECK (coalesce(array_length(highlight_tags, 1), 0) <= 3), -- 대표 태그들 (최대 3개)
+  author_name TEXT, -- 작성자 표시명 (스냅샷)
+  author_avatar_url TEXT, -- 작성자 썸네일 (스냅샷)
   is_verified_purchase BOOLEAN DEFAULT false, -- 구매 인증 여부
   helpful_count INTEGER DEFAULT 0, -- 도움됨 수
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5-1. product_review_images 테이블 (리뷰 이미지: 대표 1장 + 상세 최대 6장)
+CREATE TABLE IF NOT EXISTS product_review_images (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  review_id UUID REFERENCES product_reviews(id) ON DELETE CASCADE NOT NULL,
+  image_url TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('cover', 'detail')),
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 6. product_likes 테이블 (찜하기)
@@ -141,6 +158,8 @@ CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON product_images(produ
 CREATE INDEX IF NOT EXISTS idx_product_tags_product_id ON product_tags(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_reviews_product_id ON product_reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_reviews_user_id ON product_reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_product_reviews_highlight_tags_gin ON product_reviews USING GIN (highlight_tags);
+CREATE INDEX IF NOT EXISTS idx_product_review_images_review_id ON product_review_images(review_id);
 CREATE INDEX IF NOT EXISTS idx_product_likes_product_id ON product_likes(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_likes_user_id ON product_likes(user_id);
 
@@ -202,6 +221,35 @@ DROP POLICY IF EXISTS "Users can delete own reviews" ON product_reviews;
 CREATE POLICY "Users can delete own reviews" 
   ON product_reviews FOR DELETE 
   USING (auth.uid() = user_id);
+
+-- product_review_images: 모든 사용자 조회, 리뷰 작성자만 관리
+ALTER TABLE product_review_images ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can view review images" ON product_review_images;
+CREATE POLICY "Anyone can view review images"
+  ON product_review_images FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "Users can manage own review images" ON product_review_images;
+CREATE POLICY "Users can manage own review images"
+  ON product_review_images
+  FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM product_reviews pr
+      WHERE pr.id = product_review_images.review_id
+        AND pr.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1
+      FROM product_reviews pr
+      WHERE pr.id = product_review_images.review_id
+        AND pr.user_id = auth.uid()
+    )
+  );
 
 -- product_likes: 사용자별 관리
 ALTER TABLE product_likes ENABLE ROW LEVEL SECURITY;

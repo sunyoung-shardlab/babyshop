@@ -32,6 +32,39 @@ CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE 
   USING (auth.uid() = id);
 
+-- ============================================
+-- public_profiles 테이블 (공개 프로필: 리뷰/리스트에서 사용)
+-- ============================================
+CREATE TABLE IF NOT EXISTS public_profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  display_name TEXT,
+  avatar_url TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public_profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can view public profiles" ON public_profiles;
+CREATE POLICY "Anyone can view public profiles"
+  ON public_profiles FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "Users can insert own public profile" ON public_profiles;
+CREATE POLICY "Users can insert own public profile"
+  ON public_profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own public profile" ON public_profiles;
+CREATE POLICY "Users can update own public profile"
+  ON public_profiles FOR UPDATE
+  USING (auth.uid() = id);
+
+DROP TRIGGER IF EXISTS update_public_profiles_updated_at ON public_profiles;
+CREATE TRIGGER update_public_profiles_updated_at
+    BEFORE UPDATE ON public_profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 -- 2. cart_items 테이블 (장바구니)
 CREATE TABLE IF NOT EXISTS cart_items (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
