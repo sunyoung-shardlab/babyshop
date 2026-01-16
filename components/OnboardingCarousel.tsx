@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface OnboardingCarouselProps {
@@ -16,6 +17,7 @@ const slides = [
     showPrev: false,
     showNext: true,
     showCTA: false,
+    ctaText: '',
   },
   {
     id: 2,
@@ -26,6 +28,7 @@ const slides = [
     showPrev: true,
     showNext: true,
     showCTA: false,
+    ctaText: '',
   },
   {
     id: 3,
@@ -36,6 +39,7 @@ const slides = [
     showPrev: true,
     showNext: true,
     showCTA: false,
+    ctaText: '',
   },
   {
     id: 4,
@@ -43,14 +47,27 @@ const slides = [
     subtitle: '커지는 혜택',
     description: '포인트 적립, 등급별 할인, 친구 초대 쿠폰까지',
     emoji: '🎁',
-    showPrev: false,
+    showPrev: true,
+    showNext: true,
+    showCTA: false,
+    ctaText: '',
+  },
+  {
+    id: 5,
+    title: '회원가입 즉시',
+    subtitle: '10% 할인',
+    description: '지금 가입하고 첫 구매 시 10% 할인 혜택을 받아보세요',
+    emoji: '🎉',
+    showPrev: true,
     showNext: false,
     showCTA: true,
+    ctaText: '회원가입하기',
   },
 ];
 
 const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({ onComplete, onClose }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const navigate = useNavigate();
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
@@ -65,7 +82,14 @@ const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({ onComplete, onC
   };
 
   const handleStart = () => {
-    onComplete();
+    const slide = slides[currentSlide];
+    // 마지막 슬라이드(회원가입)인 경우 로그인 페이지로 이동
+    if (slide.ctaText === '회원가입하기') {
+      onClose(); // 온보딩 닫기
+      navigate('/login'); // 로그인 페이지로 이동
+    } else {
+      onComplete();
+    }
   };
 
   const slide = slides[currentSlide];
@@ -144,7 +168,7 @@ const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({ onComplete, onC
                   onClick={handleStart}
                   className="flex-[2] h-14 px-6 bg-[#FF5C02] text-white rounded-xl font-bold hover:bg-[#FF7022] transition-colors shadow-lg"
                 >
-                  지금 시작하기
+                  {slide.ctaText || '지금 시작하기'}
                 </button>
               )}
             </div>
@@ -165,7 +189,7 @@ const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({ onComplete, onC
                   onClick={handleStart}
                   className="w-full h-14 px-6 bg-[#FF5C02] text-white rounded-xl font-bold hover:bg-[#FF7022] transition-colors shadow-lg"
                 >
-                  지금 시작하기
+                  {slide.ctaText || '지금 시작하기'}
                 </button>
               )}
             </div>
